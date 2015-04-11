@@ -8,12 +8,19 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <inttypes.h>
+typedef uint8_t u_int8_t;
 
 typedef struct Tetris {
     u_int8_t** board;
     u_int8_t height;
     u_int8_t width;
 } Tetris;
+
+/*
+ * parameters: a pointer to a game of tetris
+ * fills array with 0s
+ */
 
 void fillArray(Tetris* game) {
     for (u_int8_t i = 0; i < game->height; i++) {
@@ -23,7 +30,13 @@ void fillArray(Tetris* game) {
     }
 }
 
-void pru_int8_tArray(Tetris* game) {
+/*
+ * parameters: a pointer to a game of tetris
+ * return: nothing
+ * prints array as a matrix
+ */
+
+void printArray(Tetris* game) {
     for (u_int8_t i = 0; i < game->height; i++) {
         for (u_int8_t j = 0; j < game->width; j++) {
             printf("%d ",game->board[i][j]);
@@ -31,6 +44,12 @@ void pru_int8_tArray(Tetris* game) {
         printf("\n");
     }
 }
+
+/*
+ * parameter: a pointer to a game of tetris
+ * return: 1 if you lost, 0 if you haven't lost yet
+ * checks top row for 1s
+ */
 
 int checkLose(Tetris* game) {
     for (int j = 0; j < game->width; j++) {
@@ -40,6 +59,12 @@ int checkLose(Tetris* game) {
     }
     return 0;
 }
+
+/*
+ * parameters: a pointer to a game and a button input
+ * output: 1 if you shouldnt refresh the page
+ * 0 if you should
+ */
 
 int moov(u_int8_t btn, Tetris* game) {
     u_int8_t lost = checkLose(game);
@@ -56,9 +81,8 @@ int main() {
     for (u_int8_t i=0; i < game->height; i++) {
         game->board[i] = malloc(sizeof(u_int8_t) * game->width);
     }
-    
     fillArray(game);
-    pru_int8_tArray(game);
+    printArray(game);
     
     
     return 0;
