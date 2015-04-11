@@ -6,15 +6,29 @@
 //  Copyright (c) 2015 Kyler Stole. All rights reserved.
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <inttypes.h>
+#include <time.h> //time
+#include <unistd.h> //sleep
+#include <stdio.h> //printf
+#include <stdlib.h> //malloc
+#include <inttypes.h> //Zach's computer
 typedef uint8_t u_int8_t;
 
 typedef struct Tetris {
     u_int8_t** board;
     u_int8_t height;
     u_int8_t width;
+    u_int8_t piece;
+    /* 1111 222 333 44  55 666 77
+     *        2 3   44 55   6   77 */
+    u_int8_t o; // orientation
+    /* 0 | upright
+     * 1 | right
+     * 2 | down
+     * 3 | left
+     */
+    u_int8_t x;
+    u_int8_t y;
+    
 } Tetris;
 
 /*
@@ -60,6 +74,10 @@ int checkLose(Tetris* game) {
     return 0;
 }
 
+int genPiece() {
+    return rand()%7 + 1;
+}
+
 /*
  * parameters: a pointer to a game and a button input
  * output: 1 if you shouldnt refresh the page
@@ -68,7 +86,10 @@ int checkLose(Tetris* game) {
 
 int moov(u_int8_t btn, Tetris* game) {
     u_int8_t lost = checkLose(game);
-     
+    
+    if (game->piece == 0) game->piece = genPiece();
+    
+    
     return 0;
 }
 
@@ -86,12 +107,15 @@ Tetris* createGame( u_int8_t height, u_int8_t width)
 }
 
 int main() {
+    srand((unsigned int)time(NULL));
     Tetris* game = createGame(7, 5);
     fillArray(game);
-    while(checkLose(game) != 1)
-    {
-       
-       printArray(game);
+    while(checkLose(game) != 1) {
+        printArray(game);
+        sleep(1);
+        game->board[2][2] = 4;
+        printArray(game);
+        sleep(1);
     }
     return 0;
 }
