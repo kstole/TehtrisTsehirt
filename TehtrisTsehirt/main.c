@@ -68,22 +68,30 @@ int checkLose(Tetris* game) {
 
 int moov(u_int8_t btn, Tetris* game) {
     u_int8_t lost = checkLose(game);
-    
+     
     return 0;
 }
 
+Tetris* createGame( u_int8_t height, u_int8_t width)
+{
+   Tetris* game = malloc(sizeof(Tetris));
+   game->height = height;
+   game->width = width;
+   game->board = malloc(sizeof(u_int8_t*) * game->height);
+   for(u_int8_t i=0; i < game->height; i++)
+   {
+      game->board[i] = malloc(sizeof(u_int8_t) * game->width);
+   }
+   return game;
+}
+
 int main() {
-    
-    Tetris* game = malloc(sizeof(Tetris));
-    game->height = 7;
-    game->width = 5;
-    game->board = malloc(sizeof(u_int8_t*) * game->height);
-    for (u_int8_t i=0; i < game->height; i++) {
-        game->board[i] = malloc(sizeof(u_int8_t) * game->width);
-    }
+    Tetris* game = createGame(7, 5);
     fillArray(game);
-    printArray(game);
-    
-    
+    while(checkLose(game) != 1)
+    {
+       
+       printArray(game);
+    }
     return 0;
 }
