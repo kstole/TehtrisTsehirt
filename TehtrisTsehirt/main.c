@@ -33,6 +33,11 @@ u_int8_t indy = -2;
 u_int8_t score = 0;
 u_int8_t combo;
 
+/* Lettering Vars */
+u_int8_t wi = 5;
+u_int8_t hi = 7;
+u_int8_t letter[5][7];
+
 void locatePiece(u_int8_t x, u_int8_t y, u_int8_t o) {
     if (o == 5) o = 0;
     switch (piece) {
@@ -232,10 +237,18 @@ void locatePiece(u_int8_t x, u_int8_t y, u_int8_t o) {
  * fills array with 0s
  */
 
-void zeroArray() {
+void zeroBoard() {
     for (u_int8_t i = 0; i < H; i++) {
         for (u_int8_t j = 0; j < W; j++) {
             board[i][j] = 0;
+        }
+    }
+}
+
+void zeroLetter() {
+    for (u_int8_t i = 0; i < H; i++) {
+        for (u_int8_t j = 0; j < W; j++) {
+            letter[i][j] = 0;
         }
     }
 }
@@ -262,12 +275,13 @@ void printArray() {
  * checks top row for 1s
  */
 
-u_int8_t checkLose() {
-    for (u_int8_t j = 0; j < W; j++) {
-        if (board[0][j] != 0) {
-            return 1;
-        }
-    }
+u_int8_t gameOver() {
+    if (indy < 0) return 1;
+//    for (u_int8_t j = 0; j < W; j++) {
+//        if (board[0][j] != 0) {
+//            return 1;
+//        }
+//    }
     return 0;
 }
 
@@ -417,11 +431,79 @@ void checkRows() {
     }
 }
 
+/* Scroll text */
+void scrollText() {
+    for (u_int8_t i=0; i < W-1; i++) {
+        for (u_int8_t j=0; j < H; j++) {
+            board[i][j] = board[i+1][j];
+        }
+    }
+    for (u_int8_t j=0; j < H; j++) {
+        board[W-1][j] = 1;
+    }
+}
 
-u_int8_t main() {
+void setLetter(char c) {
+    wi = 5;
+    zeroLetter();
+    switch (c) {
+        case '0':
+            for (int n=1; n < 6; n++) {
+                letter[0][n] = 1;
+                letter[3][n] = 1;
+            }
+            letter[1][0] = 1;
+            letter[2][0] = 1;
+            letter[1][6] = 1;
+            letter[2][6] = 1;
+            break;
+        case '1':
+            wi = 2;
+            for (int n=0; n < 7; n++)
+                letter[0][n] = 1;
+            break;
+        case '2':
+            for (int m=0; m < 4; m++)
+                letter[m][6] = 1;
+            for (int m=0,n=5; m < 4; m++, n--)
+                letter[m][n] = 1;
+            letter[3][1] = 1;
+            letter[0][1] = 1;
+            letter[1][0] = 1;
+            letter[2][0] = 1;
+            break;
+        case '3':
+            for (int n=0; n < 7; n += 3)
+                letter[2][n] = 1;
+            letter[0][1] = 1;
+            letter[0][5] = 1;
+            letter[1][0] = 1;
+            letter[1][6] = 1;
+            letter[3][1] = 1;
+            letter[3][2] = 1;
+            letter[3][4] = 1;
+            letter[3][5] = 1;
+            break;
+        case '4':
+            for (int n=0; n < 3; n++) {
+                letter[0][n] = 1;
+                letter[3][n] = 1;
+                letter[3][n+3] = 1;
+            }
+            for (int m=0; m < 4; m++)
+                letter[m][3] = 1;
+            break;
+            
+        default:
+            break;
+    }
+}
+
+
+int main() {
     // Seed random function
     srand((unsigned int)time(NULL));
-    zeroArray();
+    zeroBoard();
     do {
         piece = genPiece();
         for (u_int8_t i=0; i < 4; i++) {
@@ -448,7 +530,7 @@ u_int8_t main() {
             sleep(1);
         } while (drop());
         checkRows();
-    } while (1);
+    } while (!gameOver());
     
     return 0;
 }
