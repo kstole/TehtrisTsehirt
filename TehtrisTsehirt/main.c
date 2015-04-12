@@ -30,7 +30,6 @@ int orient = 0; // orientation
  */
 int indx = (W/2)-2;
 int indy = -2;
-clock_t timer;
 int score = 0;
 int combo;
 
