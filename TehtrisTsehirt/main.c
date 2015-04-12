@@ -30,6 +30,7 @@ int o = 0; // orientation
  */
 int indx = (W/2)-2;
 int indy = -2;
+clock_t timer;
 
 void locatePiece(int x, int y) {
     switch (piece) {
@@ -301,28 +302,6 @@ int drop () {
     return 1; // Moved a piece down
 }
 
-void clearRow(int row) {
-    for (int i=0; i < W; i++) {
-        for (int j=row; j >= 0; j--) {
-            if (j != 0) board[i][j] = board[i][j-1];
-            else board[i][j] = 0;
-        }
-    }
-}
-
-int checkRow(int row) {
-    for (int i=0; i < W; i++) {
-        if (board[i][row] == 0) return 0;
-    }
-    return 1;
-}
-
-void checkRows() {
-    for (int j=0; j < H; j++) {
-        if (checkRow(j)) clearRow(j);
-    }
-}
-
 int moveLeft () {
     locatePiece(indx-1,indy);
     // Clear old placement
@@ -331,7 +310,7 @@ int moveLeft () {
     
     // Check for collisions
     for (int k=0; k < 4; k++) {
-        if (loc[k][1] < 0) {
+        if (loc[k][0] < 0) {
             for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Fell off the board
         } else if (board[loc[k][0]][loc[k][1]] != 0) {
@@ -356,11 +335,11 @@ int moveRight () {
     locatePiece(indx+1,indy);
     // Clear old placement
     for (int k=0; k < 4; k++)
-        if (curLoc[k][1] <= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
+        if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
     
     // Check for collisions
     for (int k=0; k < 4; k++) {
-        if (loc[k][1] >= W) {
+        if (loc[k][0] >= W) {
             for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Fell off the board
         } else if (board[loc[k][0]][loc[k][1]] != 0) {
@@ -381,20 +360,28 @@ int moveRight () {
     return 1; // Moved a piece right
 }
 
-/*
- * parameters: a pointer to a game and a button input
- * output: 1 if you shouldnt refresh the page
- * 0 if you should
- */
-
-int moov(int btn) {
-    int lost = checkLose();
-    
-    if (piece == 0) piece = genPiece();
-    
-    
-    return 0;
+void clearRow(int row) {
+    for (int i=0; i < W; i++) {
+        for (int j=row; j >= 0; j--) {
+            if (j != 0) board[i][j] = board[i][j-1];
+            else board[i][j] = 0;
+        }
+    }
 }
+
+int checkRow(int row) {
+    for (int i=0; i < W; i++) {
+        if (board[i][row] == 0) return 0;
+    }
+    return 1;
+}
+
+void checkRows() {
+    for (int j=0; j < H; j++) {
+        if (checkRow(j)) clearRow(j);
+    }
+}
+
 
 int main() {
     // Seed random function
@@ -409,6 +396,15 @@ int main() {
         indx = (W/2)-2;
         indy = -2;
         do {
+            char c = 'p';
+            while (1) {
+                c = fgetc(stdin);
+                if (c == 'a')
+                    moveLeft();
+                else if (c == 'd')
+                    moveRight();
+                else break;
+            }
             printArray();
             sleep(1);
         } while (drop());
