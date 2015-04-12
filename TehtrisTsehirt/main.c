@@ -11,45 +11,46 @@
 #include <stdio.h> //printf
 #include <stdlib.h> //malloc
 #include <inttypes.h> //Zach's computer
-typedef uint8_t u_int8_t;
+//typedef uint8_t int;
 #define W 8
 #define H 10
 
 /* Global Vars */
-u_int8_t board[W][H];
-u_int8_t loc[4][2];
-u_int8_t piece;
+int board[W][H];
+int loc[4][2];
+int curLoc[4][2] = {{-1,-1},{-1,-1},{-1,-1},{-1,-1}};
+int piece = 0;
 // 1111 22  33 44  5     6  7
 //      22 33   44 555 666 777
-u_int8_t o; // orientation
+int o = 0; // orientation
 /* 0 | up
  * 1 | right
  * 2 | down
  * 3 | left
  */
-u_int8_t x;
-u_int8_t y;
+int indx = (W/2)-1;
+int indy = -2;
 
 
 //typedef struct Tetris {
-//    u_int8_t** board;
-//    u_int8_t height;
-//    u_int8_t width;
-//    u_int8_t piece;
+//    int** board;
+//    int height;
+//    int width;
+//    int piece;
 //    /* 1111 222 333 44  55 666 77
 //     *        2 3   44 55   6   77 */
-//    u_int8_t o; // orientation
+//    int o; // orientation
 //    /* 0 | upright
 //     * 1 | right
 //     * 2 | down
 //     * 3 | left
 //     */
-//    u_int8_t x;
-//    u_int8_t y;
+//    int x;
+//    int y;
 //    
 //} Tetris;
 
-void locatePiece() {
+void locatePiece(int x, int y) {
     switch (piece) {
         case 1:
             if (o == 0) {
@@ -252,8 +253,8 @@ void locatePiece() {
  */
 
 void fillArray() {
-    for (u_int8_t i = 0; i < H; i++) {
-        for (u_int8_t j = 0; j < W; j++) {
+    for (int i = 0; i < H; i++) {
+        for (int j = 0; j < W; j++) {
             board[i][j] = 0;
         }
     }
@@ -266,12 +267,13 @@ void fillArray() {
  */
 
 void printArray() {
-    for (u_int8_t i = 0; i < H; i++) {
-        for (u_int8_t j = 0; j < W; j++) {
+    for (int i = 0; i < H; i++) {
+        for (int j = 0; j < W; j++) {
             printf("%d ",board[i][j]);
         }
         printf("\n");
     }
+    printf("\n");
 }
 
 /*
@@ -293,14 +295,36 @@ int genPiece() {
     return rand()%7 + 1;
 }
 
+int drop () {
+    locatePiece(indx,indy+1);
+    for (int k=0; k < 4; k++) {
+        if (loc[k][1] >= H) return 0; // Fell off the board
+        else if (board[loc[k][0]][loc[k][1]] != 0) return 0; // Hit another block;
+    }
+    // Clear old placement
+    for (int k=0; k < 4; k++) {
+        board[curLoc[k][0]][curLoc[k][1]] = 0;
+    }
+    
+    for (int k=0; k < 4; k++) {
+        if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
+        curLoc[k][0] = loc[k][0];
+        curLoc[k][1] = loc[k][1];
+    }
+    
+    indy++;
+    
+    return 1; // Moved a piece down
+}
+
 /*
  * parameters: a pointer to a game and a button input
  * output: 1 if you shouldnt refresh the page
  * 0 if you should
  */
 
-int moov(u_int8_t btn) {
-    u_int8_t lost = checkLose();
+int moov(int btn) {
+    int lost = checkLose();
     
     if (piece == 0) piece = genPiece();
     
@@ -311,12 +335,20 @@ int moov(u_int8_t btn) {
 int main() {
     srand((unsigned int)time(NULL));
     fillArray();
-    while(checkLose() != 1) {
+    piece = 1;
+    while (1) {
         printArray();
-        sleep(1);
-        board[2][2] = 4;
-        printArray();
-        sleep(1);
+        sleep(2);
+        drop();
     }
+    
+    
+//    while(checkLose() != 1) {
+//        printArray();
+//        sleep(1);
+//        board[2][2] = 4;
+//        printArray();
+//        sleep(1);
+//    }
     return 0;
 }
