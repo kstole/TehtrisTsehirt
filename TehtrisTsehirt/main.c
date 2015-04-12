@@ -22,7 +22,7 @@ int curLoc[4][2] = {{-1,-1},{-1,-1},{-1,-1},{-1,-1}};
 int piece = 0;
 // 1111 22  33 44  5     6  7
 //      22 33   44 555 666 777
-int o = 0; // orientation
+int orient = 0; // orientation
 /* 0 | up
  * 1 | right
  * 2 | down
@@ -32,7 +32,8 @@ int indx = (W/2)-2;
 int indy = -2;
 clock_t timer;
 
-void locatePiece(int x, int y) {
+void locatePiece(int x, int y, int o) {
+    if (o == 5) o = 0;
     switch (piece) {
         case 1:
             if (o == 0) {
@@ -274,7 +275,7 @@ int genPiece() {
 }
 
 int drop () {
-    locatePiece(indx,indy+1);
+    locatePiece(indx,indy+1, orient);
     // Clear old placement
     for (int k=0; k < 4; k++)
         if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
@@ -303,7 +304,7 @@ int drop () {
 }
 
 int moveLeft () {
-    locatePiece(indx-1,indy);
+    locatePiece(indx-1,indy,orient);
     // Clear old placement
     for (int k=0; k < 4; k++)
         if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
@@ -332,7 +333,7 @@ int moveLeft () {
 }
 
 int moveRight () {
-    locatePiece(indx+1,indy);
+    locatePiece(indx+1,indy,orient);
     // Clear old placement
     for (int k=0; k < 4; k++)
         if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
@@ -358,6 +359,36 @@ int moveRight () {
     indx++;
     
     return 1; // Moved a piece right
+}
+
+int rotateCW () {
+    locatePiece(indx,indy,orient+1);
+    // Clear old placement
+    for (int k=0; k < 4; k++)
+        if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
+    
+    // Check for collisions
+    for (int k=0; k < 4; k++) {
+        if (loc[k][0] >= W) {
+            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            return 0; // Fell off the board
+        } else if (board[loc[k][0]][loc[k][1]] != 0) {
+            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            return 0; // Hit another block;
+        }
+    }
+    
+    // Move to new placement
+    for (int k=0; k < 4; k++) {
+        if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
+        curLoc[k][0] = loc[k][0];
+        curLoc[k][1] = loc[k][1];
+    }
+    
+    orient++;
+    if (orient == 5) orient = 0;
+    
+    return 1; // Rotated a piece
 }
 
 void clearRow(int row) {
@@ -403,6 +434,10 @@ int main() {
                     moveLeft();
                 else if (c == 'd')
                     moveRight();
+                else if (c == 'w')
+                    rotateCW();
+                else if (c == 's')
+                    drop();
                 else break;
             }
             printArray();
