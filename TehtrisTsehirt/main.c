@@ -320,6 +320,28 @@ int drop () {
     return 1; // Moved a piece down
 }
 
+void clearRow(int row) {
+    for (int i=0; i < W; i++) {
+        for (int j=row; j >= 0; j--) {
+            if (j != 0) board[i][j] = board[i][j-1];
+            else board[i][j] = 0;
+        }
+    }
+}
+
+int checkRow(int row) {
+    for (int i=0; i < W; i++) {
+        if (board[i][row] == 0) return 0;
+    }
+    return 1;
+}
+
+void checkRows() {
+    for (int j=0; j < H; j++) {
+        if (checkRow(j)) clearRow(j);
+    }
+}
+
 /*
  * parameters: a pointer to a game and a button input
  * output: 1 if you shouldnt refresh the page
@@ -351,6 +373,7 @@ int main() {
             printArray();
             sleep(1);
         } while (drop());
+        checkRows();
     } while (1);
     
     return 0;
