@@ -31,6 +31,8 @@ int orient = 0; // orientation
 int indx = (W/2)-2;
 int indy = -2;
 clock_t timer;
+int score = 0;
+int combo;
 
 void locatePiece(int x, int y, int o) {
     if (o == 5) o = 0;
@@ -369,7 +371,7 @@ int rotateCW () {
     
     // Check for collisions
     for (int k=0; k < 4; k++) {
-        if (loc[k][0] >= W) {
+        if (loc[k][0] < 0 || loc[k][0] >= W || loc[k][1] >= H) {
             for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Fell off the board
         } else if (board[loc[k][0]][loc[k][1]] != 0) {
@@ -398,16 +400,19 @@ void clearRow(int row) {
             else board[i][j] = 0;
         }
     }
+    score += 100*combo;
 }
 
 int checkRow(int row) {
     for (int i=0; i < W; i++) {
         if (board[i][row] == 0) return 0;
     }
+    combo++;
     return 1;
 }
 
 void checkRows() {
+    combo = 0;
     for (int j=0; j < H; j++) {
         if (checkRow(j)) clearRow(j);
     }
