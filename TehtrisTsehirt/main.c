@@ -17,11 +17,12 @@ typedef uint8_t u_int8_t;
 
 /* Global Vars */
 u_int8_t board[W][H];
+u_int8_t loc[4][2];
 u_int8_t piece;
-/* 1111 222 333 44  55 666 77
- *        2 3   44 55   6   77 */
+// 1111 22  33 44  5     6  7
+//      22 33   44 555 666 777
 u_int8_t o; // orientation
-/* 0 | upright
+/* 0 | up
  * 1 | right
  * 2 | down
  * 3 | left
@@ -47,6 +48,203 @@ u_int8_t y;
 //    u_int8_t y;
 //    
 //} Tetris;
+
+void locatePiece() {
+    switch (piece) {
+        case 1:
+            if (o == 0) {
+                loc[0][0] = x;
+                loc[0][1] = y+1;
+                loc[1][0] = x+1;
+                loc[1][1] = y+1;
+                loc[2][0] = x+2;
+                loc[2][1] = y+1;
+                loc[3][0] = x+3;
+                loc[3][1] = y+1;
+            } else if (o == 1) {
+                loc[0][0] = x+3;
+                loc[0][1] = y;
+                loc[1][0] = x+3;
+                loc[1][1] = y+1;
+                loc[2][0] = x+3;
+                loc[2][1] = y+2;
+                loc[3][0] = x+3;
+                loc[3][1] = y+3;
+            } else if (o == 2) {
+                loc[0][0] = x;
+                loc[0][1] = y+2;
+                loc[1][0] = x+1;
+                loc[1][1] = y+2;
+                loc[2][0] = x+2;
+                loc[2][1] = y+2;
+                loc[3][0] = x+3;
+                loc[3][1] = y+2;
+            } else {
+                loc[0][0] = x+2;
+                loc[0][1] = y;
+                loc[1][0] = x+2;
+                loc[1][1] = y+1;
+                loc[2][0] = x+2;
+                loc[2][1] = y+2;
+                loc[3][0] = x+2;
+                loc[3][1] = y+3;
+            }
+        case 2:
+            loc[0][0] = x;
+            loc[0][1] = y;
+            loc[1][0] = x+1;
+            loc[1][1] = y;
+            loc[2][0] = x;
+            loc[2][1] = y+1;
+            loc[3][0] = x+1;
+            loc[3][1] = y+1;
+        case 3:
+            loc[0][0] = x+1;
+            loc[0][1] = y+1;
+            loc[1][0] = x;
+            loc[1][1] = y+1;
+            loc[2][0] = x+1;
+            loc[2][1] = y;
+            if (o == 1 || o == 2) {
+                loc[1][0] = x+2;
+            }
+            if (o == 2 || o == 3) {
+                loc[2][1] = y+2;
+            }
+            if (o == 0) {
+                loc[3][0] = x+2;
+                loc[3][1] = y;
+            } else if (o == 1) {
+                loc[3][0] = x+2;
+                loc[3][1] = y+2;
+            } else if (o == 2) {
+                loc[3][0] = x;
+                loc[3][1] = y+2;
+            } else {
+                loc[3][0] = x;
+                loc[3][1] = y;
+            }
+            break;
+        case 4:
+            loc[0][0] = x+1;
+            loc[0][1] = y+1;
+            if (o == 0) {
+                loc[1][0] = x;
+                loc[1][1] = y+1;
+                loc[2][0] = x+1;
+                loc[2][1] = y;
+                loc[3][0] = x+2;
+                loc[3][1] = y;
+            } else if (o == 1) {
+                loc[1][0] = x+1;
+                loc[1][1] = y;
+                loc[2][0] = x+2;
+                loc[2][1] = y+1;
+                loc[3][0] = x+2;
+                loc[3][1] = y+2;
+            } else if (o == 2) {
+                loc[1][0] = x+2;
+                loc[1][1] = y+1;
+                loc[2][0] = x+1;
+                loc[2][1] = y+2;
+                loc[3][0] = x;
+                loc[3][1] = y+2;
+            } else {
+                loc[1][0] = x+1;
+                loc[1][1] = y+2;
+                loc[2][0] = x;
+                loc[2][1] = y+1;
+                loc[3][0] = x+1;
+                loc[3][1] = y+2;
+            }
+            break;
+        case 5:
+            loc[0][0] = x+1;
+            loc[0][1] = y+1;
+            if (o == 0 || o == 2) {
+                loc[1][0] = x;
+                loc[1][1] = y+1;
+                loc[2][0] = x+2;
+                loc[2][1] = y+1;
+            } else {
+                loc[1][0] = x+1;
+                loc[1][1] = y;
+                loc[2][0] = x+1;
+                loc[2][1] = y+2;
+            }
+            if (o == 0) {
+                loc[3][0] = x;
+                loc[3][1] = y;
+            }
+            else if (o == 1) {
+                loc[3][0] = x+2;
+                loc[3][1] = y;
+                }
+            else if (o == 2) {
+                loc[3][0] = x+2;
+                loc[3][1] = y+2;
+            } else {
+                loc[3][0] = x;
+                loc[3][1] = y+2;
+            }
+            break;
+        case 6:
+            loc[0][0] = x+1;
+            loc[0][1] = y+1;
+            if (o == 0 || o == 2) {
+                loc[1][0] = x;
+                loc[1][1] = y+1;
+                loc[2][0] = x+2;
+                loc[2][1] = y+1;
+            } else {
+                loc[1][0] = x+1;
+                loc[1][1] = y;
+                loc[2][0] = x+1;
+                loc[2][1] = y+2;
+            }
+            if (o == 0) {
+                loc[3][0] = x+2;
+                loc[3][1] = y;
+            }
+            else if (o == 1) {
+                loc[3][0] = x+2;
+                loc[3][1] = y+2;
+            }
+            else if (o == 2) {
+                loc[3][0] = x;
+                loc[3][1] = y+2;
+            } else {
+                loc[3][0] = x;
+                loc[3][1] = y;
+            }
+            break;
+        case 7:
+            loc[0][0] = x+1;
+            loc[0][1] = y+1;
+            loc[1][0] = x;
+            loc[1][1] = y+1;
+            loc[2][0] = x+2;
+            loc[2][1] = y+1;
+            if (o == 2) {
+                loc[3][0] = x+1;
+                loc[3][1] = y+2;
+            } else {
+                loc[3][0] = x+1;
+                loc[3][1] = y;
+                if (o == 1) {
+                    loc[1][0] = x+1;
+                    loc[1][1] = y+2;
+                } else if (o == 3) {
+                    loc[2][0] = x+1;
+                    loc[2][1] = y+2;
+                }
+            }
+            break;
+            
+        default:
+            break;
+    }
+}
 
 /*
  * parameters: a pointer to a game of tetris
