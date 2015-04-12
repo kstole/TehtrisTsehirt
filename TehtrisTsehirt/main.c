@@ -92,14 +92,14 @@ void locatePiece(int x, int y) {
             }
             break;
         case 2:
-            loc[0][0] = x;
-            loc[0][1] = y;
-            loc[1][0] = x+1;
-            loc[1][1] = y;
-            loc[2][0] = x;
-            loc[2][1] = y+1;
-            loc[3][0] = x+1;
-            loc[3][1] = y+1;
+            loc[0][0] = x+1;
+            loc[0][1] = y+1;
+            loc[1][0] = x+2;
+            loc[1][1] = y+1;
+            loc[2][0] = x+1;
+            loc[2][1] = y+2;
+            loc[3][0] = x+2;
+            loc[3][1] = y+2;
             break;
         case 3:
             loc[0][0] = x+1;
@@ -337,7 +337,7 @@ int moov(int btn) {
 int main() {
     srand((unsigned int)time(NULL));
     fillArray();
-    piece = 5;
+    piece = 2;
     while (1) {
         printArray();
         sleep(2);
