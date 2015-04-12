@@ -16,24 +16,24 @@
 #define H 10
 
 /* Global Vars */
-int board[W][H];
-int loc[4][2];
-int curLoc[4][2] = {{-1,-1},{-1,-1},{-1,-1},{-1,-1}};
-int piece = 0;
+u_int8_t board[W][H];
+u_int8_t loc[4][2];
+u_int8_t curLoc[4][2] = {{-1,-1},{-1,-1},{-1,-1},{-1,-1}};
+u_int8_t piece = 0;
 // 1111 22  33 44  5     6  7
 //      22 33   44 555 666 777
-int orient = 0; // orientation
+u_int8_t orient = 0; // orientation
 /* 0 | up
  * 1 | right
  * 2 | down
  * 3 | left
  */
-int indx = (W/2)-2;
-int indy = -2;
-int score = 0;
-int combo;
+u_int8_t indx = (W/2)-2;
+u_int8_t indy = -2;
+u_int8_t score = 0;
+u_int8_t combo;
 
-void locatePiece(int x, int y, int o) {
+void locatePiece(u_int8_t x, u_int8_t y, u_int8_t o) {
     if (o == 5) o = 0;
     switch (piece) {
         case 1:
@@ -232,9 +232,9 @@ void locatePiece(int x, int y, int o) {
  * fills array with 0s
  */
 
-void fillArray() {
-    for (int i = 0; i < H; i++) {
-        for (int j = 0; j < W; j++) {
+void zeroArray() {
+    for (u_int8_t i = 0; i < H; i++) {
+        for (u_int8_t j = 0; j < W; j++) {
             board[i][j] = 0;
         }
     }
@@ -247,8 +247,8 @@ void fillArray() {
  */
 
 void printArray() {
-    for (int j = 0; j < H; j++) {
-        for (int i = 0; i < W; i++) {
+    for (u_int8_t j = 0; j < H; j++) {
+        for (u_int8_t i = 0; i < W; i++) {
             printf("%d ",board[i][j]);
         }
         printf("\n");
@@ -262,8 +262,8 @@ void printArray() {
  * checks top row for 1s
  */
 
-int checkLose() {
-    for (int j = 0; j < W; j++) {
+u_int8_t checkLose() {
+    for (u_int8_t j = 0; j < W; j++) {
         if (board[0][j] != 0) {
             return 1;
         }
@@ -271,29 +271,29 @@ int checkLose() {
     return 0;
 }
 
-int genPiece() {
+u_int8_t genPiece() {
     return 1 + rand() / (RAND_MAX / (7 - 1 + 1) + 1);
 }
 
-int drop () {
+u_int8_t drop () {
     locatePiece(indx,indy+1, orient);
     // Clear old placement
-    for (int k=0; k < 4; k++)
+    for (u_int8_t k=0; k < 4; k++)
         if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
     
     // Check for collisions
-    for (int k=0; k < 4; k++) {
+    for (u_int8_t k=0; k < 4; k++) {
         if (loc[k][1] >= H) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Fell off the board
         } else if (board[loc[k][0]][loc[k][1]] != 0) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Hit another block;
         }
     }
 
     // Move to new placement
-    for (int k=0; k < 4; k++) {
+    for (u_int8_t k=0; k < 4; k++) {
         if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
         curLoc[k][0] = loc[k][0];
         curLoc[k][1] = loc[k][1];
@@ -304,25 +304,25 @@ int drop () {
     return 1; // Moved a piece down
 }
 
-int moveLeft () {
+u_int8_t moveLeft () {
     locatePiece(indx-1,indy,orient);
     // Clear old placement
-    for (int k=0; k < 4; k++)
+    for (u_int8_t k=0; k < 4; k++)
         if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
     
     // Check for collisions
-    for (int k=0; k < 4; k++) {
+    for (u_int8_t k=0; k < 4; k++) {
         if (loc[k][0] < 0) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Fell off the board
         } else if (board[loc[k][0]][loc[k][1]] != 0) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Hit another block;
         }
     }
     
     // Move to new placement
-    for (int k=0; k < 4; k++) {
+    for (u_int8_t k=0; k < 4; k++) {
         if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
         curLoc[k][0] = loc[k][0];
         curLoc[k][1] = loc[k][1];
@@ -333,25 +333,25 @@ int moveLeft () {
     return 1; // Moved a piece left
 }
 
-int moveRight () {
+u_int8_t moveRight () {
     locatePiece(indx+1,indy,orient);
     // Clear old placement
-    for (int k=0; k < 4; k++)
+    for (u_int8_t k=0; k < 4; k++)
         if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
     
     // Check for collisions
-    for (int k=0; k < 4; k++) {
+    for (u_int8_t k=0; k < 4; k++) {
         if (loc[k][0] >= W) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Fell off the board
         } else if (board[loc[k][0]][loc[k][1]] != 0) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Hit another block;
         }
     }
     
     // Move to new placement
-    for (int k=0; k < 4; k++) {
+    for (u_int8_t k=0; k < 4; k++) {
         if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
         curLoc[k][0] = loc[k][0];
         curLoc[k][1] = loc[k][1];
@@ -362,25 +362,25 @@ int moveRight () {
     return 1; // Moved a piece right
 }
 
-int rotateCW () {
+u_int8_t rotateCW () {
     locatePiece(indx,indy,orient+1);
     // Clear old placement
-    for (int k=0; k < 4; k++)
+    for (u_int8_t k=0; k < 4; k++)
         if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
     
     // Check for collisions
-    for (int k=0; k < 4; k++) {
+    for (u_int8_t k=0; k < 4; k++) {
         if (loc[k][0] < 0 || loc[k][0] >= W || loc[k][1] >= H) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Fell off the board
         } else if (board[loc[k][0]][loc[k][1]] != 0) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Hit another block;
         }
     }
     
     // Move to new placement
-    for (int k=0; k < 4; k++) {
+    for (u_int8_t k=0; k < 4; k++) {
         if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
         curLoc[k][0] = loc[k][0];
         curLoc[k][1] = loc[k][1];
@@ -392,9 +392,9 @@ int rotateCW () {
     return 1; // Rotated a piece
 }
 
-void clearRow(int row) {
-    for (int i=0; i < W; i++) {
-        for (int j=row; j >= 0; j--) {
+void clearRow(u_int8_t row) {
+    for (u_int8_t i=0; i < W; i++) {
+        for (u_int8_t j=row; j >= 0; j--) {
             if (j != 0) board[i][j] = board[i][j-1];
             else board[i][j] = 0;
         }
@@ -402,8 +402,8 @@ void clearRow(int row) {
     score += 100*combo;
 }
 
-int checkRow(int row) {
-    for (int i=0; i < W; i++) {
+u_int8_t checkRow(u_int8_t row) {
+    for (u_int8_t i=0; i < W; i++) {
         if (board[i][row] == 0) return 0;
     }
     combo++;
@@ -412,19 +412,19 @@ int checkRow(int row) {
 
 void checkRows() {
     combo = 0;
-    for (int j=0; j < H; j++) {
+    for (u_int8_t j=0; j < H; j++) {
         if (checkRow(j)) clearRow(j);
     }
 }
 
 
-int main() {
+u_int8_t main() {
     // Seed random function
     srand((unsigned int)time(NULL));
-    fillArray();
+    zeroArray();
     do {
         piece = genPiece();
-        for (int i=0; i < 4; i++) {
+        for (u_int8_t i=0; i < 4; i++) {
             curLoc[i][0] = -1;
             curLoc[i][1] = -1;
         }
