@@ -294,8 +294,7 @@ int checkLose() {
 }
 
 int genPiece() {
-    return (rand() % (7+1-1))+1;
-    //return (rand()%7) + 1;
+    return rand() % 7 + 1;
 }
 
 int drop () {
@@ -337,7 +336,7 @@ int moov(int btn) {
 }
 
 int main() {
-    srand((unsigned int)time(NULL));
+    srand(time(NULL));
     fillArray();
     piece = genPiece();
     do {
