@@ -31,25 +31,6 @@ int o = 0; // orientation
 int indx = (W/2)-2;
 int indy = -2;
 
-
-//typedef struct Tetris {
-//    int** board;
-//    int height;
-//    int width;
-//    int piece;
-//    /* 1111 222 333 44  55 666 77
-//     *        2 3   44 55   6   77 */
-//    int o; // orientation
-//    /* 0 | upright
-//     * 1 | right
-//     * 2 | down
-//     * 3 | left
-//     */
-//    int x;
-//    int y;
-//
-//} Tetris;
-
 void locatePiece(int x, int y) {
     switch (piece) {
         case 1:
