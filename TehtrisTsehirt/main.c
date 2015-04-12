@@ -28,7 +28,7 @@ int o = 0; // orientation
  * 2 | down
  * 3 | left
  */
-int indx = (W/2)-1;
+int indx = (W/2)-2;
 int indy = -2;
 
 
@@ -90,6 +90,7 @@ void locatePiece(int x, int y) {
                 loc[3][0] = x+2;
                 loc[3][1] = y+3;
             }
+            break;
         case 2:
             loc[0][0] = x;
             loc[0][1] = y;
@@ -99,6 +100,7 @@ void locatePiece(int x, int y) {
             loc[2][1] = y+1;
             loc[3][0] = x+1;
             loc[3][1] = y+1;
+            break;
         case 3:
             loc[0][0] = x+1;
             loc[0][1] = y+1;
@@ -267,8 +269,8 @@ void fillArray() {
  */
 
 void printArray() {
-    for (int i = 0; i < H; i++) {
-        for (int j = 0; j < W; j++) {
+    for (int j = 0; j < H; j++) {
+        for (int i = 0; i < W; i++) {
             printf("%d ",board[i][j]);
         }
         printf("\n");
@@ -303,7 +305,7 @@ int drop () {
     }
     // Clear old placement
     for (int k=0; k < 4; k++) {
-        board[curLoc[k][0]][curLoc[k][1]] = 0;
+        if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
     }
     
     for (int k=0; k < 4; k++) {
@@ -335,7 +337,7 @@ int moov(int btn) {
 int main() {
     srand((unsigned int)time(NULL));
     fillArray();
-    piece = 1;
+    piece = 5;
     while (1) {
         printArray();
         sleep(2);
