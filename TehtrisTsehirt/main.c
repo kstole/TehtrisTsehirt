@@ -47,7 +47,7 @@ int indy = -2;
 //     */
 //    int x;
 //    int y;
-//    
+//
 //} Tetris;
 
 void locatePiece(int x, int y) {
@@ -131,33 +131,27 @@ void locatePiece(int x, int y) {
         case 4:
             loc[0][0] = x+1;
             loc[0][1] = y+1;
-            if (o == 0) {
+            loc[1][0] = x+2;
+            loc[1][1] = y+1;
+            loc[2][0] = x+1;
+            loc[2][1] = y;
+            if (o == 2 || o == 3) {
                 loc[1][0] = x;
-                loc[1][1] = y+1;
-                loc[2][0] = x+1;
-                loc[2][1] = y;
-                loc[3][0] = x+2;
+            }
+            if (o == 1 || o == 2) {
+                loc[2][1] = y+2;
+            }
+            if (o == 0) {
+                loc[3][0] = x;
                 loc[3][1] = y;
             } else if (o == 1) {
-                loc[1][0] = x+1;
-                loc[1][1] = y;
-                loc[2][0] = x+2;
-                loc[2][1] = y+1;
+                loc[3][0] = x+2;
+                loc[3][1] = y;
+            } else if (o == 2) {
                 loc[3][0] = x+2;
                 loc[3][1] = y+2;
-            } else if (o == 2) {
-                loc[1][0] = x+2;
-                loc[1][1] = y+1;
-                loc[2][0] = x+1;
-                loc[2][1] = y+2;
-                loc[3][0] = x;
-                loc[3][1] = y+2;
             } else {
-                loc[1][0] = x+1;
-                loc[1][1] = y+2;
-                loc[2][0] = x;
-                loc[2][1] = y+1;
-                loc[3][0] = x+1;
+                loc[3][0] = x;
                 loc[3][1] = y+2;
             }
             break;
@@ -182,7 +176,7 @@ void locatePiece(int x, int y) {
             else if (o == 1) {
                 loc[3][0] = x+2;
                 loc[3][1] = y;
-                }
+            }
             else if (o == 2) {
                 loc[3][0] = x+2;
                 loc[3][1] = y+2;
@@ -294,20 +288,26 @@ int checkLose() {
 }
 
 int genPiece() {
-    return rand() % 7 + 1;
+    return 1 + rand() / (RAND_MAX / (7 - 1 + 1) + 1);
 }
 
 int drop () {
     locatePiece(indx,indy+1);
-    for (int k=0; k < 4; k++) {
-        if (loc[k][1] >= H) return 0; // Fell off the board
-        else if (!(loc[k][0] == curLoc[k][0] && loc[k][1] == curLoc[k][1]+1)
-                 &&  board[loc[k][0]][loc[k][1]] != 0) return 0; // Hit another block;
-    }
     // Clear old placement
     for (int k=0; k < 4; k++) {
         if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
     }
+    
+    for (int k=0; k < 4; k++) {
+        if (loc[k][1] >= H) {
+            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            return 0; // Fell off the board
+        } else if (board[loc[k][0]][loc[k][1]] != 0) {
+            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            return 0; // Hit another block;
+        }
+    }
+
     // Move new placement
     for (int k=0; k < 4; k++) {
         if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
@@ -336,21 +336,22 @@ int moov(int btn) {
 }
 
 int main() {
-    srand(time(NULL));
+    // Seed random function
+    srand((unsigned int)time(NULL));
     fillArray();
-    piece = genPiece();
     do {
-        printArray();
-        sleep(2);
-    } while (drop());
+        piece = genPiece();
+        for (int i=0; i < 4; i++) {
+            curLoc[i][0] = -1;
+            curLoc[i][1] = -1;
+        }
+        indx = (W/2)-2;
+        indy = -2;
+        do {
+            printArray();
+            sleep(1);
+        } while (drop());
+    } while (1);
     
-    
-//    while(checkLose() != 1) {
-//        printArray();
-//        sleep(1);
-//        board[2][2] = 4;
-//        printArray();
-//        sleep(1);
-//    }
     return 0;
 }
