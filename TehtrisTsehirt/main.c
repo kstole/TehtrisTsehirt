@@ -6,6 +6,7 @@
 //  Copyright (c) 2015 Kyler Stole. All rights reserved.
 //
 
+#include <string.h>
 #include <time.h> //time
 #include <unistd.h> //sleep
 #include <stdio.h> //printf
@@ -16,29 +17,29 @@
 #define H 10
 
 /* Global Vars */
-u_int8_t board[W][H];
-u_int8_t loc[4][2];
-u_int8_t curLoc[4][2] = {{-1,-1},{-1,-1},{-1,-1},{-1,-1}};
-u_int8_t piece = 0;
+uint8_t board[W][H];
+uint8_t loc[4][2];
+uint8_t curLoc[4][2] = {{-1,-1},{-1,-1},{-1,-1},{-1,-1}};
+uint8_t piece = 0;
 // 1111 22  33 44  5     6  7
 //      22 33   44 555 666 777
-u_int8_t orient = 0; // orientation
+uint8_t orient = 0; // orientation
 /* 0 | up
  * 1 | right
  * 2 | down
  * 3 | left
  */
-u_int8_t indx = (W/2)-2;
-u_int8_t indy = -2;
-u_int8_t score = 0;
-u_int8_t combo;
+uint8_t indx = (W/2)-2;
+uint8_t indy = -2;
+uint8_t score = 0;
+uint8_t combo;
 
 /* Lettering Vars */
-u_int8_t wi = 5;
-u_int8_t hi = 7;
-u_int8_t letter[5][7];
+uint8_t wi = 5;
+uint8_t hi = 7;
+uint8_t letter[5][7];
 
-void locatePiece(u_int8_t x, u_int8_t y, u_int8_t o) {
+void locatePiece(uint8_t x, uint8_t y, uint8_t o) {
     if (o == 5) o = 0;
     switch (piece) {
         case 1:
@@ -238,16 +239,16 @@ void locatePiece(u_int8_t x, u_int8_t y, u_int8_t o) {
  */
 
 void zeroBoard() {
-    for (u_int8_t i = 0; i < H; i++) {
-        for (u_int8_t j = 0; j < W; j++) {
+    for (uint8_t i = 0; i < H; i++) {
+        for (uint8_t j = 0; j < W; j++) {
             board[i][j] = 0;
         }
     }
 }
 
 void zeroLetter() {
-    for (u_int8_t i = 0; i < H; i++) {
-        for (u_int8_t j = 0; j < W; j++) {
+    for (uint8_t i = 0; i < H; i++) {
+        for (uint8_t j = 0; j < W; j++) {
             letter[i][j] = 0;
         }
     }
@@ -260,8 +261,8 @@ void zeroLetter() {
  */
 
 void printArray() {
-    for (u_int8_t j = 0; j < H; j++) {
-        for (u_int8_t i = 0; i < W; i++) {
+    for (uint8_t j = 0; j < H; j++) {
+        for (uint8_t i = 0; i < W; i++) {
             printf("%d ",board[i][j]);
         }
         printf("\n");
@@ -275,9 +276,9 @@ void printArray() {
  * checks top row for 1s
  */
 
-u_int8_t gameOver() {
+uint8_t gameOver() {
     if (indy < 0) return 1;
-//    for (u_int8_t j = 0; j < W; j++) {
+//    for (uint8_t j = 0; j < W; j++) {
 //        if (board[0][j] != 0) {
 //            return 1;
 //        }
@@ -285,29 +286,29 @@ u_int8_t gameOver() {
     return 0;
 }
 
-u_int8_t genPiece() {
+uint8_t genPiece() {
     return 1 + rand() / (RAND_MAX / (7 - 1 + 1) + 1);
 }
 
-u_int8_t drop () {
+uint8_t drop () {
     locatePiece(indx,indy+1, orient);
     // Clear old placement
-    for (u_int8_t k=0; k < 4; k++)
+    for (uint8_t k=0; k < 4; k++)
         if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
     
     // Check for collisions
-    for (u_int8_t k=0; k < 4; k++) {
+    for (uint8_t k=0; k < 4; k++) {
         if (loc[k][1] >= H) {
-            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (uint8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Fell off the board
         } else if (board[loc[k][0]][loc[k][1]] != 0) {
-            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (uint8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Hit another block;
         }
     }
 
     // Move to new placement
-    for (u_int8_t k=0; k < 4; k++) {
+    for (uint8_t k=0; k < 4; k++) {
         if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
         curLoc[k][0] = loc[k][0];
         curLoc[k][1] = loc[k][1];
@@ -318,25 +319,25 @@ u_int8_t drop () {
     return 1; // Moved a piece down
 }
 
-u_int8_t moveLeft () {
+uint8_t moveLeft () {
     locatePiece(indx-1,indy,orient);
     // Clear old placement
-    for (u_int8_t k=0; k < 4; k++)
+    for (uint8_t k=0; k < 4; k++)
         if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
     
     // Check for collisions
-    for (u_int8_t k=0; k < 4; k++) {
+    for (uint8_t k=0; k < 4; k++) {
         if (loc[k][0] < 0) {
-            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (uint8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Fell off the board
         } else if (board[loc[k][0]][loc[k][1]] != 0) {
-            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (uint8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Hit another block;
         }
     }
     
     // Move to new placement
-    for (u_int8_t k=0; k < 4; k++) {
+    for (uint8_t k=0; k < 4; k++) {
         if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
         curLoc[k][0] = loc[k][0];
         curLoc[k][1] = loc[k][1];
@@ -347,25 +348,25 @@ u_int8_t moveLeft () {
     return 1; // Moved a piece left
 }
 
-u_int8_t moveRight () {
+uint8_t moveRight () {
     locatePiece(indx+1,indy,orient);
     // Clear old placement
-    for (u_int8_t k=0; k < 4; k++)
+    for (uint8_t k=0; k < 4; k++)
         if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
     
     // Check for collisions
-    for (u_int8_t k=0; k < 4; k++) {
+    for (uint8_t k=0; k < 4; k++) {
         if (loc[k][0] >= W) {
-            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (uint8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Fell off the board
         } else if (board[loc[k][0]][loc[k][1]] != 0) {
-            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (uint8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Hit another block;
         }
     }
     
     // Move to new placement
-    for (u_int8_t k=0; k < 4; k++) {
+    for (uint8_t k=0; k < 4; k++) {
         if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
         curLoc[k][0] = loc[k][0];
         curLoc[k][1] = loc[k][1];
@@ -376,25 +377,25 @@ u_int8_t moveRight () {
     return 1; // Moved a piece right
 }
 
-u_int8_t rotateCW () {
+uint8_t rotateCW () {
     locatePiece(indx,indy,orient+1);
     // Clear old placement
-    for (u_int8_t k=0; k < 4; k++)
+    for (uint8_t k=0; k < 4; k++)
         if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
     
     // Check for collisions
-    for (u_int8_t k=0; k < 4; k++) {
+    for (uint8_t k=0; k < 4; k++) {
         if (loc[k][0] < 0 || loc[k][0] >= W || loc[k][1] >= H) {
-            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (uint8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Fell off the board
         } else if (board[loc[k][0]][loc[k][1]] != 0) {
-            for (u_int8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            for (uint8_t k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
             return 0; // Hit another block;
         }
     }
     
     // Move to new placement
-    for (u_int8_t k=0; k < 4; k++) {
+    for (uint8_t k=0; k < 4; k++) {
         if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
         curLoc[k][0] = loc[k][0];
         curLoc[k][1] = loc[k][1];
@@ -406,18 +407,18 @@ u_int8_t rotateCW () {
     return 1; // Rotated a piece
 }
 
-void clearRow(u_int8_t row) {
-    for (u_int8_t i=0; i < W; i++) {
-        for (u_int8_t j=row; j >= 0; j--) {
+void clearRow(uint8_t row) {
+    for (uint8_t i=0; i < W; i++) {
+        for (uint8_t j=row; j >= 0; j--) {
             if (j != 0) board[i][j] = board[i][j-1];
             else board[i][j] = 0;
         }
     }
-    score += 100*combo;
+    score += combo;
 }
 
-u_int8_t checkRow(u_int8_t row) {
-    for (u_int8_t i=0; i < W; i++) {
+uint8_t checkRow(uint8_t row) {
+    for (uint8_t i=0; i < W; i++) {
         if (board[i][row] == 0) return 0;
     }
     combo++;
@@ -426,29 +427,18 @@ u_int8_t checkRow(u_int8_t row) {
 
 void checkRows() {
     combo = 0;
-    for (u_int8_t j=0; j < H; j++) {
+    for (uint8_t j=0; j < H; j++) {
         if (checkRow(j)) clearRow(j);
     }
 }
 
 /* Scroll text */
-void scrollText() {
-    for (u_int8_t i=0; i < W-1; i++) {
-        for (u_int8_t j=0; j < H; j++) {
-            board[i][j] = board[i+1][j];
-        }
-    }
-    for (u_int8_t j=0; j < H; j++) {
-        board[W-1][j] = 1;
-    }
-}
-
-void setLetter(char c) {
+void setLetter(uint8_t c) {
     wi = 5;
     zeroLetter();
     switch (c) {
-        case '0':
-            for (int n=1; n < 6; n++) {
+        case 0:
+            for (uint8_t n=1; n < 6; n++) {
                 letter[0][n] = 1;
                 letter[3][n] = 1;
             }
@@ -457,23 +447,23 @@ void setLetter(char c) {
             letter[1][6] = 1;
             letter[2][6] = 1;
             break;
-        case '1':
+        case 1:
             wi = 2;
-            for (int n=0; n < 7; n++)
+            for (uint8_t n=0; n < 7; n++)
                 letter[0][n] = 1;
             break;
-        case '2':
-            for (int m=0; m < 4; m++)
+        case 2:
+            for (uint8_t m=0; m < 4; m++)
                 letter[m][6] = 1;
-            for (int m=0,n=5; m < 4; m++, n--)
+            for (uint8_t m=0,n=5; m < 4; m++, n--)
                 letter[m][n] = 1;
             letter[3][1] = 1;
             letter[0][1] = 1;
             letter[1][0] = 1;
             letter[2][0] = 1;
             break;
-        case '3':
-            for (int n=0; n < 7; n += 3)
+        case 3:
+            for (uint8_t n=0; n < 7; n += 3)
                 letter[2][n] = 1;
             letter[0][1] = 1;
             letter[0][5] = 1;
@@ -484,14 +474,65 @@ void setLetter(char c) {
             letter[3][4] = 1;
             letter[3][5] = 1;
             break;
-        case '4':
-            for (int n=0; n < 3; n++) {
+        case 4:
+            for (uint8_t n=0; n < 3; n++) {
                 letter[0][n] = 1;
                 letter[3][n] = 1;
                 letter[3][n+3] = 1;
             }
-            for (int m=0; m < 4; m++)
+            for (uint8_t m=0; m < 4; m++)
                 letter[m][3] = 1;
+            break;
+        case 5:
+            for (uint8_t n=0; n < 4; n++)
+                letter[0][n] = 1;
+            for (uint8_t n=0; n < 7; n += 3) {
+                letter[1][n] = 1;
+                letter[2][n] = 1;
+            }
+            letter[0][5] = 1;
+            letter[3][0] = 1;
+            letter[3][4] = 1;
+            letter[3][5] = 1;
+            break;
+        case 6:
+            for (uint8_t n=0; n < 7; n += 3) {
+                letter[1][n] = 1;
+                letter[2][n] = 1;
+            }
+            for (uint8_t n=1; n < 6; n++)
+                letter[0][n] = 1;
+            letter[3][0] = 1;
+            letter[3][4] = 1;
+            letter[3][5] = 1;
+            break;
+        case 7:
+            for (uint8_t n=0; n < 7; n++)
+                letter[3][n] = 1;
+            for (uint8_t m=0; m < 3; m++)
+                letter[m][0] = 1;
+            break;
+        case 8:
+            for (uint8_t n=0; n < 7; n += 3) {
+                letter[1][n] = 1;
+                letter[2][n] = 1;
+            }
+            for (uint8_t n=1; n < 6; n++) {
+                letter[0][n] = 1;
+                letter[3][n] = 1;
+            }
+            letter[0][3] = 0;
+            letter[3][3] = 0;
+            break;
+        case 9:
+            for (uint8_t n=1; n < 7; n++)
+                letter[3][n] = 1;
+            letter[0][1] = 1;
+            letter[0][2] = 1;
+            letter[1][0] = 1;
+            letter[2][0] = 1;
+            letter[1][3] = 1;
+            letter[2][3] = 1;
             break;
             
         default:
@@ -499,38 +540,75 @@ void setLetter(char c) {
     }
 }
 
+void scrollText(uint8_t k) {
+    for (uint8_t i=0; i < W-1; i++) {
+        for (uint8_t j=0; j < H; j++)
+            board[i][j] = board[i+1][j];
+    }
+    for (uint8_t j=0; j < H; j++)
+        board[W-1][j+1] = letter[k][j];
+}
+
+int showGameOver() {
+    while (1) {
+        zeroBoard();
+        int mult[] = {1,10,100};
+        int num;
+        if (score > 10) num = 3;
+        else if (score > 1) num = 2;
+        else num = 1;
+        for (uint8_t p=0; p < num; p++) {
+            setLetter(score/mult[num-1]);
+            score = score - ((score/mult[num-1]) * mult[num-1]);
+            for (uint8_t k=0; k < wi; k++) {
+                scrollText(k);
+                sleep(1);
+            }
+        }
+        for (uint8_t p=0; p < W; p++) {
+            setLetter(10);
+            scrollText(1);
+        }
+    }
+    
+    return 0;
+}
+
+
+void newPiece() {
+    piece = genPiece();
+    for (u_int8_t i=0; i < 4; i++) {
+        curLoc[i][0] = -1;
+        curLoc[i][1] = -1;
+    }
+    indx = (W/2)-2;
+    indy = -2;
+}
+
+uint8_t play(){
+    if (dropTime()) {
+        if (!drop()) {
+            checkRows();
+            if (gameOver()) showGameOver();
+            else newPiece();
+        }
+    } else {
+        if (getButton(0)) moveLeft();
+        if (getButton(1)) moveRight();
+        if (getButton(2)) rotateCW();
+        if (getButton(3)) drop();
+    }
+    return 0;
+}
+
+void initTetris(){
+    srand(time(NULL)); // Seed random function
+    zeroBoard();
+    newPiece();
+}
 
 int main() {
-    // Seed random function
-    srand((unsigned int)time(NULL));
-    zeroBoard();
-    do {
-        piece = genPiece();
-        for (u_int8_t i=0; i < 4; i++) {
-            curLoc[i][0] = -1;
-            curLoc[i][1] = -1;
-        }
-        indx = (W/2)-2;
-        indy = -2;
-        do {
-            char c = 'p';
-            while (1) {
-                c = fgetc(stdin);
-                if (c == 'a')
-                    moveLeft();
-                else if (c == 'd')
-                    moveRight();
-                else if (c == 'w')
-                    rotateCW();
-                else if (c == 's')
-                    drop();
-                else break;
-            }
-            printArray();
-            sleep(1);
-        } while (drop());
-        checkRows();
-    } while (!gameOver());
+    while (play());
     
     return 0;
 }
