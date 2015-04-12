@@ -275,10 +275,10 @@ int genPiece() {
 int drop () {
     locatePiece(indx,indy+1);
     // Clear old placement
-    for (int k=0; k < 4; k++) {
+    for (int k=0; k < 4; k++)
         if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
-    }
     
+    // Check for collisions
     for (int k=0; k < 4; k++) {
         if (loc[k][1] >= H) {
             for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
@@ -289,7 +289,7 @@ int drop () {
         }
     }
 
-    // Move new placement
+    // Move to new placement
     for (int k=0; k < 4; k++) {
         if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
         curLoc[k][0] = loc[k][0];
@@ -321,6 +321,64 @@ void checkRows() {
     for (int j=0; j < H; j++) {
         if (checkRow(j)) clearRow(j);
     }
+}
+
+int moveLeft () {
+    locatePiece(indx-1,indy);
+    // Clear old placement
+    for (int k=0; k < 4; k++)
+        if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
+    
+    // Check for collisions
+    for (int k=0; k < 4; k++) {
+        if (loc[k][1] < 0) {
+            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            return 0; // Fell off the board
+        } else if (board[loc[k][0]][loc[k][1]] != 0) {
+            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            return 0; // Hit another block;
+        }
+    }
+    
+    // Move to new placement
+    for (int k=0; k < 4; k++) {
+        if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
+        curLoc[k][0] = loc[k][0];
+        curLoc[k][1] = loc[k][1];
+    }
+    
+    indx--;
+    
+    return 1; // Moved a piece left
+}
+
+int moveRight () {
+    locatePiece(indx+1,indy);
+    // Clear old placement
+    for (int k=0; k < 4; k++)
+        if (curLoc[k][1] <= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
+    
+    // Check for collisions
+    for (int k=0; k < 4; k++) {
+        if (loc[k][1] >= W) {
+            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            return 0; // Fell off the board
+        } else if (board[loc[k][0]][loc[k][1]] != 0) {
+            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+            return 0; // Hit another block;
+        }
+    }
+    
+    // Move to new placement
+    for (int k=0; k < 4; k++) {
+        if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
+        curLoc[k][0] = loc[k][0];
+        curLoc[k][1] = loc[k][1];
+    }
+    
+    indx++;
+    
+    return 1; // Moved a piece right
 }
 
 /*
