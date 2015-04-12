@@ -294,20 +294,22 @@ int checkLose() {
 }
 
 int genPiece() {
-    return rand()%7 + 1;
+    return (rand() % (7+1-1))+1;
+    //return (rand()%7) + 1;
 }
 
 int drop () {
     locatePiece(indx,indy+1);
     for (int k=0; k < 4; k++) {
         if (loc[k][1] >= H) return 0; // Fell off the board
-        else if (board[loc[k][0]][loc[k][1]] != 0) return 0; // Hit another block;
+        else if (!(loc[k][0] == curLoc[k][0] && loc[k][1] == curLoc[k][1]+1)
+                 &&  board[loc[k][0]][loc[k][1]] != 0) return 0; // Hit another block;
     }
     // Clear old placement
     for (int k=0; k < 4; k++) {
         if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
     }
-    
+    // Move new placement
     for (int k=0; k < 4; k++) {
         if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
         curLoc[k][0] = loc[k][0];
@@ -337,12 +339,11 @@ int moov(int btn) {
 int main() {
     srand((unsigned int)time(NULL));
     fillArray();
-    piece = 2;
-    while (1) {
+    piece = genPiece();
+    do {
         printArray();
         sleep(2);
-        drop();
-    }
+    } while (drop());
     
     
 //    while(checkLose() != 1) {
