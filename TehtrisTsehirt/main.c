@@ -13,7 +13,7 @@
 #include <inttypes.h> //Zach's computer
 //typedef int int;
 #define W 8
-#define H 10
+#define H 30
 
 /* Global Vars */
 int board[W][H];
@@ -32,6 +32,9 @@ int indx = (W/2)-2;
 int indy = -2;
 int score = 0;
 int combo;
+
+int ranPlace = 0;
+int ranGen[7] = {1,2,3,4,5,6,7};
 
 /* Lettering Vars */
 int wi = 5;
@@ -286,7 +289,18 @@ int gameOver() {
 }
 
 int genPiece() {
-    return 1 + rand() / (RAND_MAX / (7 - 1 + 1) + 1);
+    //return 1 + rand() / (RAND_MAX / (7 - 1 + 1) + 1);
+	if (ranPlace == 0) {
+		ranPlace = 7;
+		for (uint8_t i = 0; i < 7 - 1; i++) {
+			uint8_t j = i + rand() / (RAND_MAX / (7 - i) + 1);
+			uint8_t t = ranGen[j];
+			ranGen[j] = ranGen[i];
+			ranGen[i] = t;
+		}
+	}
+	ranPlace--;
+	return ranGen[ranPlace];
 }
 
 int drop () {
