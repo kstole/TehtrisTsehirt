@@ -11,9 +11,9 @@
 #include <stdio.h> //printf
 #include <stdlib.h> //malloc
 #include <inttypes.h> //Zach's computer
-//typedef int int;
+
 #define W 8
-#define H 30
+#define H 20
 
 /* Global Vars */
 int board[W][H];
@@ -30,6 +30,9 @@ int orient = 0; // orientation
  */
 int indx = (W/2)-2;
 int indy = -2;
+int offx = 0;
+int offy = 0;
+
 int score = 0;
 int combo;
 
@@ -235,10 +238,65 @@ void locatePiece(int x, int y, int o) {
     }
 }
 
-/*
- * parameters: a pointer to a game of tetris
- * fills array with 0s
- */
+void setOffsets(int test) {
+	if (test == 1) {
+		offx = 0; offy = 0;
+	} else if (piece != 1) {
+		switch (test) {
+			case 2:
+				if (orient == 0) {offx = -1; offy = 0;}
+				else if (orient == 1) {offx = 1; offy = 0;}
+				else if (orient == 2) {offx = 1; offy = 0;}
+				else if (orient == 3) {offx = -1; offy = 0;}
+				break;
+			case 3:
+				if (orient == 0) {offx = -1; offy = -1;}
+				else if (orient == 1) {offx = 1; offy = 1;}
+				else if (orient == 2) {offx = 1; offy = -1;}
+				else if (orient == 3) {offx = -1; offy = 1;}
+			case 4:
+				if (orient == 0) {offx = 0; offy = 2;}
+				else if (orient == 1) {offx = 0; offy = -2;}
+				else if (orient == 2) {offx = 0; offy = 2;}
+				else if (orient == 3) {offx = 0; offy = -2;}
+			case 5:
+				if (orient == 0) {offx = -1; offy = 2;}
+				else if (orient == 1) {offx = 1; offy = -2;}
+				else if (orient == 2) {offx = 1; offy = 2;}
+				else if (orient == 3) {offx = -1; offy = -2;}
+				
+			default:
+				break;
+		}
+	} else { // the I piece has it's own kick data
+		switch (test) {
+			case 2:
+				if (orient == 0) {offx = -2; offy = 0;}
+				else if (orient == 1) {offx = -1; offy = 0;}
+				else if (orient == 2) {offx = 2; offy = 0;}
+				else if (orient == 3) {offx = 1; offy = 0;}
+				break;
+			case 3:
+				if (orient == 0) {offx = 1; offy = 0;}
+				else if (orient == 1) {offx = 2; offy = 0;}
+				else if (orient == 2) {offx = -1; offy = 0;}
+				else if (orient == 3) {offx = -2; offy = 0;}
+			case 4:
+				if (orient == 0) {offx = -2; offy = 1;}
+				else if (orient == 1) {offx = -1; offy = -2;}
+				else if (orient == 2) {offx = 2; offy = -1;}
+				else if (orient == 3) {offx = 1; offy = 2;}
+			case 5:
+				if (orient == 0) {offx = 1; offy = -2;}
+				else if (orient == 1) {offx = 2; offy = 1;}
+				else if (orient == 2) {offx = -1; offy = 2;}
+				else if (orient == 3) {offx = -2; offy = -1;}
+				
+			default:
+				break;
+		}
+	}
+}
 
 void zeroBoard() {
     for (int i = 0; i < H; i++) {
@@ -303,7 +361,7 @@ int genPiece() {
 	return ranGen[ranPlace];
 }
 
-int drop () {
+int drop() {
     locatePiece(indx,indy+1, orient);
     // Clear old placement
     for (int k=0; k < 4; k++)
@@ -311,12 +369,9 @@ int drop () {
     
     // Check for collisions
     for (int k=0; k < 4; k++) {
-        if (loc[k][1] >= H) {
+        if (loc[k][1] >= H || board[loc[k][0]][loc[k][1]] != 0) {
             for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
-            return 0; // Fell off the board
-        } else if (board[loc[k][0]][loc[k][1]] != 0) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
-            return 0; // Hit another block;
+            return 0; // Fell off the board or Hit another block
         }
     }
 
@@ -332,7 +387,7 @@ int drop () {
     return 1; // Moved a piece down
 }
 
-int moveLeft () {
+int moveLeft() {
     locatePiece(indx-1,indy,orient);
     // Clear old placement
     for (int k=0; k < 4; k++)
@@ -340,12 +395,9 @@ int moveLeft () {
     
     // Check for collisions
     for (int k=0; k < 4; k++) {
-        if (loc[k][0] < 0) {
+        if (loc[k][0] < 0 || board[loc[k][0]][loc[k][1]] != 0) {
             for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
-            return 0; // Fell off the board
-        } else if (board[loc[k][0]][loc[k][1]] != 0) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
-            return 0; // Hit another block;
+            return 0; // Fell off the board or Hit another block
         }
     }
     
@@ -361,7 +413,7 @@ int moveLeft () {
     return 1; // Moved a piece left
 }
 
-int moveRight () {
+int moveRight() {
     locatePiece(indx+1,indy,orient);
     // Clear old placement
     for (int k=0; k < 4; k++)
@@ -369,12 +421,9 @@ int moveRight () {
     
     // Check for collisions
     for (int k=0; k < 4; k++) {
-        if (loc[k][0] >= W) {
+        if (loc[k][0] >= W || board[loc[k][0]][loc[k][1]] != 0) {
             for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
-            return 0; // Fell off the board
-        } else if (board[loc[k][0]][loc[k][1]] != 0) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
-            return 0; // Hit another block;
+            return 0; // Fell off the board or Hit another block
         }
     }
     
@@ -391,33 +440,42 @@ int moveRight () {
 }
 
 int rotateCW () {
-    locatePiece(indx,indy,orient+1);
     // Clear old placement
     for (int k=0; k < 4; k++)
         if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
-    
-    // Check for collisions
-    for (int k=0; k < 4; k++) {
-        if (loc[k][0] < 0 || loc[k][0] >= W || loc[k][1] >= H) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
-            return 0; // Fell off the board
-        } else if (board[loc[k][0]][loc[k][1]] != 0) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
-            return 0; // Hit another block;
-        }
-    }
-    
-    // Move to new placement
-    for (int k=0; k < 4; k++) {
-        if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
-        curLoc[k][0] = loc[k][0];
-        curLoc[k][1] = loc[k][1];
-    }
-    
-    orient++;
-    if (orient == 5) orient = 0;
-    
-    return 1; // Rotated a piece
+	
+	int allClear = 1;
+	
+	for (int test = 1; test <= 5; test++) {
+		setOffsets(test);
+		locatePiece(indx+offx,indy+offy,orient+1);
+		
+		allClear = 1; // start assuming the space works
+		
+		// Check for collisions
+		for (int k=0; k < 4; k++)
+			if (loc[k][0] < 0 || loc[k][0] >= W || loc[k][1] >= H || board[loc[k][0]][loc[k][1]] != 0)
+				allClear = 0; // Fell off the board or Hit another block
+		
+		if (allClear) break; // If block did not collide, then it's a fit!
+	}
+	
+	if (allClear) {
+		// Move to new placement
+		for (int k=0; k < 4; k++) {
+			if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
+			curLoc[k][0] = loc[k][0];
+			curLoc[k][1] = loc[k][1];
+		}
+		
+		orient++;
+		if (orient == 5) orient = 0;
+		
+		return 1; // Rotated a piece
+	} else {
+		for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
+		return 0; // Failed all rotation tests
+	}
 }
 
 void clearRow(int row) {
