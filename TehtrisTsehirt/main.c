@@ -1,727 +1,200 @@
-//
-//  main.c
-//  TehtrisTsehirt
-//
-//  Created by Kyler Stole on 4/10/15.
-//  Copyright (c) 2015 Kyler Stole. All rights reserved.
-//
+/* Name: main.c
+ * Author: Ryan Kitchen, Kyler Stole, Zachary Stark
+ * Copyright: Copyright (c) 2015 Ryan Kitchen, Kyler Stole, and Zachary Stark. All rights reserved.
+ */
 
-#include <time.h> //time
-#include <unistd.h> //sleep
-#include <stdio.h> //printf
-#include <stdlib.h> //malloc
-#include <inttypes.h> //Zach's computer
 
+#include <avr/io.h>
+#include <util/delay.h>
+#include <stdlib.h>
+
+#define CPU_PRESCALE(n) (CLKPR = 0x80, CLKPR = (n))
+#define CPU_16MHz       0x00
+#define CPU_8MHz        0x01
+#define CPU_4MHz        0x02
+#define CPU_2MHz        0x03
+#define CPU_1MHz        0x04
+#define CPU_500kHz      0x05
+#define CPU_250kHz      0x06
+#define CPU_125kHz      0x07
+#define CPU_62kHz       0x08
+
+#define HI 10
 #define W 8
-#define H 20
+#define H 13  // 10
 
-/* Global Vars */
-int board[W][H];
-int loc[4][2];
-int curLoc[4][2] = {{-1,-1},{-1,-1},{-1,-1},{-1,-1}};
-int piece = 0;
-// 1111 22  33 44  5     6  7
-//      22 33   44 555 666 777
-int orient = 0; // orientation
-/* 0 | up
- * 1 | right
- * 2 | down
- * 3 | left
- */
-int indx = (W/2)-2;
-int indy = -2;
-int offx = 0;
-int offy = 0;
+char colors[8]={
+	0b00000000,
+	0b11000000,
+	0b10000000,
+	0b01100000,
+	0b11100000,
+	0b01000000,
+	0b10100000,
+	0b00100000
+};
 
-int score = 0;
-int combo;
+char rowSelect[HI]={
+	0b00000001,
+	0b00000010,
+	0b00000100,
+	0b00001000,
+	0b00010000,
+	0b00100000,
+	0b01000000,
+	0b10000000,
+	0b00000000,
+	0b00000000
+};
 
-int ranPlace = 0;
-int ranGen[7] = {1,2,3,4,5,6,7};
-
-/* Lettering Vars */
-int wi = 5;
-int hi = 7;
-int letter[5][7];
-
-void locatePiece(int x, int y, int o) {
-    if (o == 5) o = 0;
-    switch (piece) {
-        case 1:
-            if (o == 0) {
-                loc[0][0] = x;
-                loc[0][1] = y+1;
-                loc[1][0] = x+1;
-                loc[1][1] = y+1;
-                loc[2][0] = x+2;
-                loc[2][1] = y+1;
-                loc[3][0] = x+3;
-                loc[3][1] = y+1;
-            } else if (o == 1) {
-                loc[0][0] = x+3;
-                loc[0][1] = y;
-                loc[1][0] = x+3;
-                loc[1][1] = y+1;
-                loc[2][0] = x+3;
-                loc[2][1] = y+2;
-                loc[3][0] = x+3;
-                loc[3][1] = y+3;
-            } else if (o == 2) {
-                loc[0][0] = x;
-                loc[0][1] = y+2;
-                loc[1][0] = x+1;
-                loc[1][1] = y+2;
-                loc[2][0] = x+2;
-                loc[2][1] = y+2;
-                loc[3][0] = x+3;
-                loc[3][1] = y+2;
-            } else {
-                loc[0][0] = x+2;
-                loc[0][1] = y;
-                loc[1][0] = x+2;
-                loc[1][1] = y+1;
-                loc[2][0] = x+2;
-                loc[2][1] = y+2;
-                loc[3][0] = x+2;
-                loc[3][1] = y+3;
-            }
-            break;
-        case 2:
-            loc[0][0] = x+1;
-            loc[0][1] = y+1;
-            loc[1][0] = x+2;
-            loc[1][1] = y+1;
-            loc[2][0] = x+1;
-            loc[2][1] = y+2;
-            loc[3][0] = x+2;
-            loc[3][1] = y+2;
-            break;
-        case 3:
-            loc[0][0] = x+1;
-            loc[0][1] = y+1;
-            loc[1][0] = x;
-            loc[1][1] = y+1;
-            loc[2][0] = x+1;
-            loc[2][1] = y;
-            if (o == 1 || o == 2) {
-                loc[1][0] = x+2;
-            }
-            if (o == 2 || o == 3) {
-                loc[2][1] = y+2;
-            }
-            if (o == 0) {
-                loc[3][0] = x+2;
-                loc[3][1] = y;
-            } else if (o == 1) {
-                loc[3][0] = x+2;
-                loc[3][1] = y+2;
-            } else if (o == 2) {
-                loc[3][0] = x;
-                loc[3][1] = y+2;
-            } else {
-                loc[3][0] = x;
-                loc[3][1] = y;
-            }
-            break;
-        case 4:
-            loc[0][0] = x+1;
-            loc[0][1] = y+1;
-            loc[1][0] = x+2;
-            loc[1][1] = y+1;
-            loc[2][0] = x+1;
-            loc[2][1] = y;
-            if (o == 2 || o == 3) {
-                loc[1][0] = x;
-            }
-            if (o == 1 || o == 2) {
-                loc[2][1] = y+2;
-            }
-            if (o == 0) {
-                loc[3][0] = x;
-                loc[3][1] = y;
-            } else if (o == 1) {
-                loc[3][0] = x+2;
-                loc[3][1] = y;
-            } else if (o == 2) {
-                loc[3][0] = x+2;
-                loc[3][1] = y+2;
-            } else {
-                loc[3][0] = x;
-                loc[3][1] = y+2;
-            }
-            break;
-        case 5:
-            loc[0][0] = x+1;
-            loc[0][1] = y+1;
-            if (o == 0 || o == 2) {
-                loc[1][0] = x;
-                loc[1][1] = y+1;
-                loc[2][0] = x+2;
-                loc[2][1] = y+1;
-            } else {
-                loc[1][0] = x+1;
-                loc[1][1] = y;
-                loc[2][0] = x+1;
-                loc[2][1] = y+2;
-            }
-            if (o == 0) {
-                loc[3][0] = x;
-                loc[3][1] = y;
-            }
-            else if (o == 1) {
-                loc[3][0] = x+2;
-                loc[3][1] = y;
-            }
-            else if (o == 2) {
-                loc[3][0] = x+2;
-                loc[3][1] = y+2;
-            } else {
-                loc[3][0] = x;
-                loc[3][1] = y+2;
-            }
-            break;
-        case 6:
-            loc[0][0] = x+1;
-            loc[0][1] = y+1;
-            if (o == 0 || o == 2) {
-                loc[1][0] = x;
-                loc[1][1] = y+1;
-                loc[2][0] = x+2;
-                loc[2][1] = y+1;
-            } else {
-                loc[1][0] = x+1;
-                loc[1][1] = y;
-                loc[2][0] = x+1;
-                loc[2][1] = y+2;
-            }
-            if (o == 0) {
-                loc[3][0] = x+2;
-                loc[3][1] = y;
-            }
-            else if (o == 1) {
-                loc[3][0] = x+2;
-                loc[3][1] = y+2;
-            }
-            else if (o == 2) {
-                loc[3][0] = x;
-                loc[3][1] = y+2;
-            } else {
-                loc[3][0] = x;
-                loc[3][1] = y;
-            }
-            break;
-        case 7:
-            loc[0][0] = x+1;
-            loc[0][1] = y+1;
-            loc[1][0] = x;
-            loc[1][1] = y+1;
-            loc[2][0] = x+2;
-            loc[2][1] = y+1;
-            if (o == 2) {
-                loc[3][0] = x+1;
-                loc[3][1] = y+2;
-            } else {
-                loc[3][0] = x+1;
-                loc[3][1] = y;
-                if (o == 1) {
-                    loc[1][0] = x+1;
-                    loc[1][1] = y+2;
-                } else if (o == 3) {
-                    loc[2][0] = x+1;
-                    loc[2][1] = y+2;
-                }
-            }
-            break;
-            
-        default:
-            break;
-    }
-}
-
-void setOffsets(int test) {
-	if (test == 1) {
-		offx = 0; offy = 0;
-	} else if (piece != 1) {
-		switch (test) {
-			case 2:
-				if (orient == 0) {offx = -1; offy = 0;}
-				else if (orient == 1) {offx = 1; offy = 0;}
-				else if (orient == 2) {offx = 1; offy = 0;}
-				else if (orient == 3) {offx = -1; offy = 0;}
-				break;
-			case 3:
-				if (orient == 0) {offx = -1; offy = -1;}
-				else if (orient == 1) {offx = 1; offy = 1;}
-				else if (orient == 2) {offx = 1; offy = -1;}
-				else if (orient == 3) {offx = -1; offy = 1;}
-			case 4:
-				if (orient == 0) {offx = 0; offy = 2;}
-				else if (orient == 1) {offx = 0; offy = -2;}
-				else if (orient == 2) {offx = 0; offy = 2;}
-				else if (orient == 3) {offx = 0; offy = -2;}
-			case 5:
-				if (orient == 0) {offx = -1; offy = 2;}
-				else if (orient == 1) {offx = 1; offy = -2;}
-				else if (orient == 2) {offx = 1; offy = 2;}
-				else if (orient == 3) {offx = -1; offy = -2;}
-				
-			default:
-				break;
-		}
-	} else { // the I piece has it's own kick data
-		switch (test) {
-			case 2:
-				if (orient == 0) {offx = -2; offy = 0;}
-				else if (orient == 1) {offx = -1; offy = 0;}
-				else if (orient == 2) {offx = 2; offy = 0;}
-				else if (orient == 3) {offx = 1; offy = 0;}
-				break;
-			case 3:
-				if (orient == 0) {offx = 1; offy = 0;}
-				else if (orient == 1) {offx = 2; offy = 0;}
-				else if (orient == 2) {offx = -1; offy = 0;}
-				else if (orient == 3) {offx = -2; offy = 0;}
-			case 4:
-				if (orient == 0) {offx = -2; offy = 1;}
-				else if (orient == 1) {offx = -1; offy = -2;}
-				else if (orient == 2) {offx = 2; offy = -1;}
-				else if (orient == 3) {offx = 1; offy = 2;}
-			case 5:
-				if (orient == 0) {offx = 1; offy = -2;}
-				else if (orient == 1) {offx = 2; offy = 1;}
-				else if (orient == 2) {offx = -1; offy = 2;}
-				else if (orient == 3) {offx = -2; offy = -1;}
-				
-			default:
-				break;
-		}
+void delay_ms(unsigned int xms) {
+	while (xms) {
+		_delay_ms(0.96);
+		xms--;
 	}
 }
 
-void zeroBoard() {
-    for (int i = 0; i < H; i++) {
-        for (int j = 0; j < W; j++) {
-            board[i][j] = 0;
-        }
-    }
+char setColor(char r, char g, char b) {
+	char f=PORTF & 0b00011111;
+	if (r) f|=(1<<5);
+	if (g) f|=(1<<6);
+	if (b) f|=(1<<7);
+	PORTF = f;
 }
 
-void zeroLetter() {
-    for (int i = 0; i < H; i++) {
-        for (int j = 0; j < W; j++) {
-            letter[i][j] = 0;
-        }
-    }
-}
-
-/*
- * parameters: a pointer to a game of tetris
- * return: nothing
- * prints array as a matrix
- */
-
-void printArray() {
-    for (int j = 0; j < H; j++) {
-        for (int i = 0; i < W; i++) {
-            printf("%d ",board[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
-/*
- * parameter: a pointer to a game of tetris
- * return: 1 if you lost, 0 if you haven't lost yet
- * checks top row for 1s
- */
-
-int gameOver() {
-    if (indy < 0) return 1;
-//    for (int j = 0; j < W; j++) {
-//        if (board[0][j] != 0) {
-//            return 1;
-//        }
-//    }
-    return 0;
-}
-
-int genPiece() {
-    //return 1 + rand() / (RAND_MAX / (7 - 1 + 1) + 1);
-	if (ranPlace == 0) {
-		ranPlace = 7;
-		for (uint8_t i = 0; i < 7 - 1; i++) {
-			uint8_t j = i + rand() / (RAND_MAX / (7 - i) + 1);
-			uint8_t t = ranGen[j];
-			ranGen[j] = ranGen[i];
-			ranGen[i] = t;
-		}
+char setColorBits(char c,char x, char array[][8]) {
+	char r=0;
+	if (c==1) c=0b00100000;
+	else if (c==2) c=0b01000000;
+	else if (c==3) c=0b10000000;
+	for (char i=7; i<8; i--) {
+		if (colors[array[x][i]] & c) r++;
+		if (i!=0) r = r<<1;
 	}
-	ranPlace--;
-	return ranGen[ranPlace];
+	return r;
 }
 
-int drop() {
-    locatePiece(indx,indy+1, orient);
-    // Clear old placement
-    for (int k=0; k < 4; k++)
-        if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
-    
-    // Check for collisions
-    for (int k=0; k < 4; k++) {
-        if (loc[k][1] >= H || board[loc[k][0]][loc[k][1]] != 0) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
-            return 0; // Fell off the board or Hit another block
-        }
-    }
-
-    // Move to new placement
-    for (int k=0; k < 4; k++) {
-        if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
-        curLoc[k][0] = loc[k][0];
-        curLoc[k][1] = loc[k][1];
-    }
-    
-    indy++;
-    
-    return 1; // Moved a piece down
+char setBits(char x, char array[][8]) {
+	char r=0;
+	for (char i=7; i<8; i--) {
+		if (array[x][i]) r++;
+		if (i!=0) r = r<<1;
+	}
+	return r;
 }
 
-int moveLeft() {
-    locatePiece(indx-1,indy,orient);
-    // Clear old placement
-    for (int k=0; k < 4; k++)
-        if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
-    
-    // Check for collisions
-    for (int k=0; k < 4; k++) {
-        if (loc[k][0] < 0 || board[loc[k][0]][loc[k][1]] != 0) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
-            return 0; // Fell off the board or Hit another block
-        }
-    }
-    
-    // Move to new placement
-    for (int k=0; k < 4; k++) {
-        if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
-        curLoc[k][0] = loc[k][0];
-        curLoc[k][1] = loc[k][1];
-    }
-    
-    indx--;
-    
-    return 1; // Moved a piece left
+char isHeld[3] = {0,0,0};
+char getButton(char b) {
+	if ((PINF & 1)) isHeld[1]=0;
+	else if (b==1 && !isHeld[1]) {
+		isHeld[1]=1;
+		return 1;
+	}
+	if ((PINF & 2)) isHeld[2]=0;
+	else if (b==2 && !isHeld[2]) {
+		isHeld[2]=1;
+		return 1;
+	}
+	if ((PINF & 16)) isHeld[0]=0;
+	else if (b==0 && !isHeld[0]) {
+		isHeld[0]=1;
+		return 1;
+	}
+	return 0;
 }
 
-int moveRight() {
-    locatePiece(indx+1,indy,orient);
-    // Clear old placement
-    for (int k=0; k < 4; k++)
-        if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
-    
-    // Check for collisions
-    for (int k=0; k < 4; k++) {
-        if (loc[k][0] >= W || board[loc[k][0]][loc[k][1]] != 0) {
-            for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
-            return 0; // Fell off the board or Hit another block
-        }
-    }
-    
-    // Move to new placement
-    for (int k=0; k < 4; k++) {
-        if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
-        curLoc[k][0] = loc[k][0];
-        curLoc[k][1] = loc[k][1];
-    }
-    
-    indx++;
-    
-    return 1; // Moved a piece right
+#include "tetrisrs.c"
+
+void translate(char array[][W]) {
+	for (char i=0; i < HI; i++)
+		for (char j=0; j < W; j++)
+			array[i][j] = board[j][H-1-i];
 }
 
-int rotateCW () {
-    // Clear old placement
-    for (int k=0; k < 4; k++)
-        if (curLoc[k][1] >= 0) board[curLoc[k][0]][curLoc[k][1]] = 0;
+uint8_t manualSeed = 0;
+int main(void) {
+	CPU_PRESCALE(CPU_16MHz);
+    /* insert your hardware initialization here */
+    DDRB = 0xFF;
+    DDRD = 0xFF;
+    DDRF = 0b11100000;
+	DDRC |=0b11000000;
+	PORTC&=0b00111111;
+	//DDRC &=0b00111111;
+	//PORTC |=0b11000000;
+	PORTF = 0b00010011;
+    PORTD = 0x0;
+	PORTB = 0x0;
 	
-	int allClear = 1;
+	char array[10][8]={
+		{0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0},
+		{0,0,0,0,0,0,0,0}
+	};
 	
-	for (int test = 1; test <= 5; test++) {
-		setOffsets(test);
-		locatePiece(indx+offx,indy+offy,orient+1);
-		
-		allClear = 1; // start assuming the space works
-		
-		// Check for collisions
-		for (int k=0; k < 4; k++)
-			if (loc[k][0] < 0 || loc[k][0] >= W || loc[k][1] >= H || board[loc[k][0]][loc[k][1]] != 0)
-				allClear = 0; // Fell off the board or Hit another block
-		
-		if (allClear) break; // If block did not collide, then it's a fit!
+	initTetris();
+	
+	while (1) {
+		manualSeed++;
+		if (getButton(0) || getButton(1) || getButton(2) || getButton(3)) {
+			srand(manualSeed);
+			break;
+		}
 	}
 	
-	if (allClear) {
-		// Move to new placement
-		for (int k=0; k < 4; k++) {
-			if (loc[k][1] >= 0) board[loc[k][0]][loc[k][1]] = piece;
-			curLoc[k][0] = loc[k][0];
-			curLoc[k][1] = loc[k][1];
+	while (1) {
+		if (play()) break;
+		translate(array);
+		char r;
+		char cbits;
+		for (char i=0; i<10; i++) {
+			PORTD = rowSelect[i];
+			if (i == 8) {
+				PORTC |= 0b01000000;
+			} else if(i==9){
+				PORTC &= 0b00111111;
+				PORTC |= 0b10000000;
+			} else PORTC &=0b00111111;
+			for (char c=0; c<3; c++) {
+				PORTB=0;
+				setColor(c==0,c==1,c==2);
+				PORTB=setColorBits(c+1,i,array);
+				_delay_ms(0.5);
+			}
 		}
-		
-		orient++;
-		if (orient == 5) orient = 0;
-		
-		return 1; // Rotated a piece
-	} else {
-		for (int k=0; k < 4; k++) board[curLoc[k][0]][curLoc[k][1]] = piece;
-		return 0; // Failed all rotation tests
+		PORTB=0;
+    }
+	while (1) {
+		if (showGameOver()) break;
+		translate(array);
+		char r;
+		char cbits;
+		for (char i=0; i<10; i++) {
+			PORTD = rowSelect[i];
+			if (i == 8) {
+				PORTC |= 0b01000000;
+			}
+			else if(i==9){
+				PORTC &= 0b00111111;
+				PORTC |= 0b10000000;
+			}
+			else PORTC &=0b00111111;
+			for (char c=0; c<3; c++) {
+				PORTB=0;
+				setColor(c==0,c==1,c==2);
+				PORTB=setColorBits(c+1,i,array);
+				_delay_ms(0.5);
+			}
+		}
+		PORTB=0;
 	}
+	
+    return 0;   /* never reached */
 }
-
-void clearRow(int row) {
-    for (int i=0; i < W; i++) {
-        for (int j=row; j >= 0; j--) {
-            if (j != 0) board[i][j] = board[i][j-1];
-            else board[i][j] = 0;
-        }
-    }
-    score += combo;
-}
-
-int checkRow(int row) {
-    for (int i=0; i < W; i++) {
-        if (board[i][row] == 0) return 0;
-    }
-    combo++;
-    return 1;
-}
-
-void checkRows() {
-    combo = 0;
-    for (int j=0; j < H; j++) {
-        if (checkRow(j)) clearRow(j);
-    }
-}
-
-/* Scroll text */
-void setLetter(int c) {
-    wi = 5;
-    zeroLetter();
-    switch (c) {
-        case 0:
-            for (int n=1; n < 6; n++) {
-                letter[0][n] = 1;
-                letter[3][n] = 1;
-            }
-            letter[1][0] = 1;
-            letter[2][0] = 1;
-            letter[1][6] = 1;
-            letter[2][6] = 1;
-            break;
-        case 1:
-            wi = 2;
-            for (int n=0; n < 7; n++)
-                letter[0][n] = 1;
-            break;
-        case 2:
-            for (int m=0; m < 4; m++)
-                letter[m][6] = 1;
-            for (int m=0,n=5; m < 4; m++, n--)
-                letter[m][n] = 1;
-            letter[3][1] = 1;
-            letter[0][1] = 1;
-            letter[1][0] = 1;
-            letter[2][0] = 1;
-            break;
-        case 3:
-            for (int n=0; n < 7; n += 3)
-                letter[2][n] = 1;
-            letter[0][1] = 1;
-            letter[0][5] = 1;
-            letter[1][0] = 1;
-            letter[1][6] = 1;
-            letter[3][1] = 1;
-            letter[3][2] = 1;
-            letter[3][4] = 1;
-            letter[3][5] = 1;
-            break;
-        case 4:
-            for (int n=0; n < 3; n++) {
-                letter[0][n] = 1;
-                letter[3][n] = 1;
-                letter[3][n+3] = 1;
-            }
-            for (int m=0; m < 4; m++)
-                letter[m][3] = 1;
-            break;
-        case 5:
-            for (int n=0; n < 4; n++)
-                letter[0][n] = 1;
-            for (int n=0; n < 7; n += 3) {
-                letter[1][n] = 1;
-                letter[2][n] = 1;
-            }
-            letter[0][5] = 1;
-            letter[3][0] = 1;
-            letter[3][4] = 1;
-            letter[3][5] = 1;
-            break;
-        case 6:
-            for (int n=0; n < 7; n += 3) {
-                letter[1][n] = 1;
-                letter[2][n] = 1;
-            }
-            for (int n=1; n < 6; n++)
-                letter[0][n] = 1;
-            letter[3][0] = 1;
-            letter[3][4] = 1;
-            letter[3][5] = 1;
-            break;
-        case 7:
-            for (int n=0; n < 7; n++)
-                letter[3][n] = 1;
-            for (int m=0; m < 3; m++)
-                letter[m][0] = 1;
-            break;
-        case 8:
-            for (int n=0; n < 7; n += 3) {
-                letter[1][n] = 1;
-                letter[2][n] = 1;
-            }
-            for (int n=1; n < 6; n++) {
-                letter[0][n] = 1;
-                letter[3][n] = 1;
-            }
-            letter[0][3] = 0;
-            letter[3][3] = 0;
-            break;
-        case 9:
-            for (int n=1; n < 7; n++)
-                letter[3][n] = 1;
-            letter[0][1] = 1;
-            letter[0][2] = 1;
-            letter[1][0] = 1;
-            letter[2][0] = 1;
-            letter[1][3] = 1;
-            letter[2][3] = 1;
-            break;
-            
-        default:
-            break;
-    }
-}
-
-void scrollText(int k) {
-    for (int i=0; i < W-1; i++) {
-        for (int j=0; j < H; j++)
-            board[i][j] = board[i+1][j];
-    }
-    for (int j=0; j < H; j++)
-        board[W-1][j+1] = letter[k][j];
-}
-
-int showGameOver() {
-    while (1) {
-        zeroBoard();
-        int mult[] = {1,10,100};
-        int num;
-        if (score > 10) num = 3;
-        else if (score > 1) num = 2;
-        else num = 1;
-        for (int p=0; p < num; p++) {
-            setLetter(score/mult[num-1]);
-            score = score - ((score/mult[num-1]) * mult[num-1]);
-            for (int k=0; k < wi; k++) {
-                scrollText(k);
-                sleep(1);
-            }
-        }
-        for (int p=0; p < W; p++) {
-            setLetter(10);
-            scrollText(1);
-        }
-    }
-    
-    return 0;
-}
-
-
-void newPiece() {
-    piece = genPiece();
-    for (int i=0; i < 4; i++) {
-        curLoc[i][0] = -1;
-        curLoc[i][1] = -1;
-    }
-    indx = (W/2)-2;
-    indy = -2;
-}
-
-void initTetris(){
-    srand(8); // Seed random function
-    zeroBoard();
-}
-
-int main() {
-    // Seed random function
-    srand((unsigned int)time(NULL));
-    zeroBoard();
-    do {
-        piece = genPiece();
-        for (int i=0; i < 4; i++) {
-            curLoc[i][0] = -1;
-            curLoc[i][1] = -1;
-        }
-        indx = (W/2)-2;
-        indy = -2;
-        do {
-            char c = 'p';
-            while (1) {
-                c = fgetc(stdin);
-                if (c == 'a')
-                    moveLeft();
-                else if (c == 'd')
-                    moveRight();
-                else if (c == 'w')
-                    rotateCW();
-                else if (c == 's')
-                    drop();
-                else break;
-            }
-            printArray();
-            //sleep(1);
-        } while (drop());
-        checkRows();
-    } while (!gameOver());
-    
-    return 0;
-}
-
-//int main() {
-//    initTetris();
-//    do {
-//        newPiece();
-//        do {
-//            printArray();
-//            char c = 'p';
-//            //while ( getchar() != '\n' );
-//            while (1) {
-//                //c = fgetc(stdin);
-//                c = getchar();
-//                if (c == 'a')
-//                    moveLeft();
-//                else if (c == 'd')
-//                    moveRight();
-//                else if (c == 'w')
-//                    rotateCW();
-//                else if (c == 's')
-//                    drop();
-//                else break;
-//            }
-//            //sleep(1);
-//        } while (drop());
-//        checkRows();
-//    } while (!gameOver());
-//    showGameOver();
-//    
-//    return 0;
-//}
