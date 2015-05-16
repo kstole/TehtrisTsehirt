@@ -402,20 +402,19 @@ uint8_t rotateCW () {
     for (uint8_t k=0; k < 4; k++)
         if (curLoc[k][1] < H) board[curLoc[k][0]][curLoc[k][1]] = 0;
 	
-	uint8_t allClear = 1;
+	uint8_t allClear = 0;
 	
 	for (uint8_t test = 1; test <= 5; test++) {
 		setOffsets(test);
 		locatePiece(indx+offx,indy+offy,orient+1);
 		
-		allClear = 1; // start assuming the space works
-		
 		// Check for collisions
 		for (uint8_t k=0; k < 4; k++)
 			if (loc[k][0] < 0 || loc[k][0] >= W || loc[k][1] >= H || board[loc[k][0]][loc[k][1]] != 0)
-				allClear = 0; // Fell off the board or Hit another block
+				continue; // Fell off the board or Hit another block
 		
-		if (allClear) break; // If block did not collide, then it's a fit!
+		allClear = 1;
+		break; // If block did not collide, then it's a fit!
 	}
 	
 	if (allClear) {
