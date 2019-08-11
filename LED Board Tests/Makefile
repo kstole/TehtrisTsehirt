@@ -40,10 +40,10 @@ SRC =	TestLEDs.c
 # MCU name, you MUST set this to match the board you are using
 # type "make clean" after changing this, so all files will be rebuilt
 #
-#MCU = at90usb162       # Teensy 1.0
-MCU = atmega32u4        # Teensy 2.0
-#MCU = at90usb646       # Teensy++ 1.0
-#MCU = at90usb1286      # Teensy++ 2.0
+#MCU = at90usb162    # Teensy 1.0
+MCU = atmega32u4     # Teensy 2.0
+#MCU = at90usb646    # Teensy++ 1.0
+#MCU = at90usb1286   # Teensy++ 2.0
 
 
 # Processor frequency.
@@ -353,6 +353,7 @@ MSG_COMPILING_CPP = Compiling C++:
 MSG_ASSEMBLING = Assembling:
 MSG_CLEANING = Cleaning project:
 MSG_CREATING_LIBRARY = Creating library:
+MSG_LOADER = Loading Teensy with CLI Teensy Loader:
 
 
 
@@ -379,7 +380,7 @@ ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 
 
 # Default target.
-all: begin gccversion sizebefore build load-teensy sizeafter end
+all: begin gccversion sizebefore build sizeafter clean-up load-teensy end
 
 # Change the build target to build a HEX file or a library.
 build: elf hex eep lss sym
@@ -485,14 +486,12 @@ extcoff: $(TARGET).elf
 	@echo $(MSG_EXTENDED_COFF) $(TARGET).cof
 	$(COFFCONVERT) -O coff-ext-avr $< $(TARGET).cof
 
-SDK ?= /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
 
 # Create final output files (.hex, .eep) from ELF output file.
 %.hex: %.elf
 	@echo
 	@echo $(MSG_FLASH) $@
 	$(OBJCOPY) -O $(FORMAT) -R .eeprom -R .fuse -R .lock -R .signature $< $@
-	teensy_loader_cli -mmcu=$(MCU) -w -v $@
 
 %.eep: %.elf
 	@echo
@@ -569,10 +568,29 @@ $(OBJDIR)/%.o : %.S
 
 
 
-#SDK ?= /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
+SDK ?= /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
 
-#load-teensy: %.hex
-#	teensy_loader_cli -mmcu=$(MCU) -w -v $@
+load-teensy: $(TARGET).hex
+	@echo
+	@echo $(MSG_LOADER)
+	@echo
+	teensy_loader_cli -mmcu=$(MCU) -w -v $^
+
+clean-up:
+	@echo
+	@echo $(MSG_CLEANING)
+	$(REMOVE) $(TARGET).eep
+	$(REMOVE) $(TARGET).cof
+	$(REMOVE) $(TARGET).elf
+	$(REMOVE) $(TARGET).map
+	$(REMOVE) $(TARGET).sym
+	$(REMOVE) $(TARGET).lss
+	$(REMOVE) $(SRC:%.c=$(OBJDIR)/%.o)
+	$(REMOVE) $(SRC:%.c=$(OBJDIR)/%.lst)
+	$(REMOVE) $(SRC:.c=.s)
+	$(REMOVE) $(SRC:.c=.d)
+	$(REMOVE) $(SRC:.c=.i)
+	$(REMOVEDIR) .dep
 
 
 # Target: clean project.

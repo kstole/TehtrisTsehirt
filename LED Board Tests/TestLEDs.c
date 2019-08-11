@@ -30,7 +30,7 @@ void _delay_ms(unsigned int time) {}
 // Global Variables
 //
 
-enum color {
+enum Color {
 	red = 0,
 	green = 1,
 	blue = 2
@@ -154,15 +154,15 @@ void allColors() {
 void selectColors(uint8_t color, uint8_t r, uint8_t g, uint8_t b) {
 	switch (color) {
 		case red:
-			if (r) PORTB = 0xFF;//0b10001111;
+			if (r) PORTB = 0b10001111;
 			else PORTB = 0b00000000;
 			break;
 		case green:
-			if (g) PORTB = 0xFF;//0b01001111;
+			if (g) PORTB = 0b01001111;
 			else PORTB = 0b00000000;
 			break;
 		case blue:
-			if (b) PORTB = 0xFF;//0b00101111;
+			if (b) PORTB = 0b00101111;
 			else PORTB = 0b00000000;
 			break;
 	}
@@ -497,12 +497,27 @@ void compileAll() {
 	}
 }
 
+void targetLED(uint8_t row, uint8_t col, uint8_t color) {
+	// Enable row
+	if (row < 8)
+		PORTD = (1 << row), PORTC = 0x00;
+	else
+		PORTD = 0x00, PORTC = (1 << (row - 2));
+	
+	// Enable column
+	PORTB = (1 << col);
+	
+	// Set color to red
+	displayColor(color);
+}
+
 int main() {
 	initLEDGrid();
 	
-	//turnOn(blue);
+	//turnOn(red);
+	targetLED(0, 0, red);
 	//allColors();
-	fadeColors();
+	//fadeColors();
 	//randomColors();
 	//colorStreaks();
 	//colorPath();
